@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Hooks</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffffff
+        }
+        h1, h2 {
+            color: #333;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>React Hooks</h1>
+
+    <h2>useState</h2>
+    <pre><code>const [state, setState] = useState(initialState);</code></pre>
+    <p>The useState hook lets you add state to functional components.</p>
+
+    <h2>useEffect</h2>
+    <pre><code>useEffect(() => {
+  // Side effects code here
+  return () => {
+    // Cleanup code here
+  };
+}, [dependencies]);</code></pre>
+    <p>The useEffect hook lets you perform side effects in functional components.</p>
+
+    <h2>useContext</h2>
+    <pre><code>const value = useContext(MyContext);</code></pre>
+    <p>The useContext hook lets you subscribe to React context without introducing nesting.</p>
+
+    <h2>useRef</h2>
+    <pre><code>const refContainer = useRef(initialValue);</code></pre>
+    <p>The useRef hook creates a mutable ref object whose .current property is initialized to the passed argument.</p>
+
+    <h2>useMemo</h2>
+    <pre><code>const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);</code></pre>
+    <p>The useMemo hook returns a memoized value.</p>
+
+</body>
+</html>
