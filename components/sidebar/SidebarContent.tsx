@@ -6,21 +6,18 @@ interface DragItem {
   node: FileSystemNode
 }
 
-
 interface SidebarContentProps {
   onFileClick: (filePath: string) => void
   fileSystem: FolderNode
-  onAddFile: (folderPath: string, fileName: string) => void
-  onAddFolder: (parentPath: string, folderName: string) => void
   onMoveNode: (nodePath: string, targetFolderPath: string) => void
+  setActivePath: (path: string | null) => void
 }
 
 export function SidebarContent({
   onFileClick,
   fileSystem,
-  onAddFile,
-  onAddFolder,
   onMoveNode,
+  setActivePath,
 }: SidebarContentProps) {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
@@ -100,7 +97,10 @@ export function SidebarContent({
         <div
           key={node.id}
           className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm cursor-pointer"
-          onClick={() => onFileClick(node.path)}
+          onClick={() => {
+            onFileClick(node.path)
+            setActivePath(node.path)
+          }}
           draggable
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
@@ -115,7 +115,10 @@ export function SidebarContent({
         <div key={node.id}>
           <div
             className={`flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] cursor-pointer ${dropTarget === node.path ? "bg-blue-100 dark:bg-blue-900" : ""}`}
-            onClick={() => toggleFolder(node.path)}
+            onClick={() => {
+              toggleFolder(node.path)
+              setActivePath(node.path)
+            }}
             draggable
             onDragStart={(e) => handleDragStart(e, node)}
             onDragOver={(e) => handleDragOver(e, node.path)}
