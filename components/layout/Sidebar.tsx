@@ -1,8 +1,11 @@
-import React from 'react'
-import { SidebarHeader } from './sidebar/SidebarHeader'
-import { SidebarSearch } from './sidebar/SidebarSearch'
-import { SidebarContent } from './sidebar/SidebarContent'
-import { SidebarFooter } from './sidebar/SidebarFooter'
+import React, { useState } from 'react'
+import { SidebarHeader } from '../sidebar/SidebarHeader'
+import { SidebarSearch } from '../sidebar/SidebarSearch'
+import { SidebarFooter } from '../sidebar/SidebarFooter'
+import { SidebarContent } from '../sidebar/SidebarContent'
+
+import { NewItemModal } from '../modals/NewItemModal'
+import { SidebarSubMenu } from '../sidebar/SIdebarSubMenu'
 
 interface SidebarProps {
   isOpen: boolean
@@ -31,6 +34,30 @@ export function Sidebar({
   onAddFolder,
   onMoveNode,
 }: SidebarProps) {
+  const [showNewItemModal, setShowNewItemModal] = useState(false)
+  const [newItemType, setNewItemType] = useState<'file' | 'folder'>('file')
+  const [newItemName, setNewItemName] = useState('')
+  const [newItemParentPath, setNewItemParentPath] = useState<string | null>(null)
+  const [activePath, setActivePath] = useState<string | null>(null)
+
+  const handleAddItem = (type: 'file' | 'folder') => {
+    setNewItemType(type)
+    setNewItemParentPath(activePath) // 현재 활성화된 경로로 설정
+    setShowNewItemModal(true)
+  }
+
+  const createNewItem = () => {
+    if (newItemParentPath) {
+      if (newItemType === 'file') {
+        onAddFile(newItemParentPath, newItemName)
+      } else {
+        onAddFolder(newItemParentPath, newItemName)
+      }
+    }
+    setShowNewItemModal(false)
+    setNewItemName('')
+  }
+
   return (
     <div className={`w-64 h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#262626] transition-all duration-300 absolute md:relative z-10`}>
       <SidebarHeader
@@ -40,14 +67,24 @@ export function Sidebar({
         setIsOpen={setIsOpen}
       />
       <SidebarSearch onSearchChange={onSearchChange} />
+      <SidebarSubMenu onAddItem={handleAddItem} />
       <SidebarContent
         onFileClick={onFileClick}
         fileSystem={fileSystem}
-        onAddFile={onAddFile}
-        onAddFolder={onAddFolder}
         onMoveNode={onMoveNode}
+        setActivePath={setActivePath}
       />
       <SidebarFooter />
+
+      <NewItemModal
+        show={showNewItemModal}
+        type={newItemType}
+        onClose={() => setShowNewItemModal(false)}
+        onCreate={createNewItem}
+        newItemName={newItemName}
+        setNewItemName={setNewItemName}
+        newItemParentPath={newItemParentPath}
+      />
     </div>
   )
 }
