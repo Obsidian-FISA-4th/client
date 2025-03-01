@@ -1,9 +1,6 @@
-"use client"
-
-import type React from "react"
 import { useState, useEffect } from "react"
-import { Pencil, Check, Trash2 } from "lucide-react"
 import MDEditor from "@uiw/react-md-editor"
+import { IconButtons } from "../ui/IconButton" 
 
 interface EditorProps {
   content: string
@@ -36,7 +33,6 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
   const handleSaveEdit = () => {
     onChange(editableContent)
 
-    // Handle file rename if the title has changed
     if (filePath && onRename && editableTitle !== filePath.split("/").pop()) {
       onRename(filePath, editableTitle)
     }
@@ -70,34 +66,13 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
             filePath.split("/").pop()
           )}
         </div>
-        <div className="flex items-center">
-          {isEditMode ? (
-            <button
-              className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-[#333] mr-2"
-              onClick={handleSaveEdit}
-              title="Save Changes"
-            >
-              <Check size={16} className="text-green-500" />
-            </button>
-          ) : (
-            <button
-              className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-[#333]"
-              onClick={() => setIsEditMode(true)}
-              title="Edit"
-            >
-              <Pencil size={16} />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-[#333] ml-2"
-              onClick={handleDelete}
-              title="Delete File"
-            >
-              <Trash2 size={16} className="text-red-500" />
-            </button>
-          )}
-        </div>
+        
+        <IconButtons
+          isEditMode={isEditMode}
+          onEdit={() => setIsEditMode(true)}
+          onSave={handleSaveEdit}
+          onDelete={handleDelete}
+        />
       </div>
 
       {/* 편집 모드 */}
