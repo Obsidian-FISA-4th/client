@@ -35,7 +35,7 @@ export function SidebarContent({
     }
 
     initializeExpandedState(fileSystem)
-    setExpandedFolders(initialExpandedFolders)
+    setExpandedFolders((prev) => ({ ...initialExpandedFolders, ...prev }))
   }, [fileSystem])
 
   const toggleFolder = (folderPath: string) => {
