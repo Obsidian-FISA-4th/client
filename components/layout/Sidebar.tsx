@@ -3,7 +3,6 @@ import { SidebarHeader } from '../sidebar/SidebarHeader'
 import { SidebarSearch } from '../sidebar/SidebarSearch'
 import { SidebarFooter } from '../sidebar/SidebarFooter'
 import { SidebarContent } from '../sidebar/SidebarContent'
-
 import { NewItemModal } from '../modals/NewItemModal'
 import { SidebarSubMenu } from '../sidebar/SIdebarSubMenu'
 
@@ -59,23 +58,27 @@ export function Sidebar({
   }
 
   return (
-    <div className={`w-64 h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#262626] transition-all duration-300 absolute md:relative z-10`}>
+    <div className={`transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#262626] absolute md:relative z-10`}>
       <SidebarHeader
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
         onDeployClick={onDeployClick}
         setIsOpen={setIsOpen}
+        isOpen={isOpen}
       />
-      <SidebarSearch onSearchChange={onSearchChange} />
-      <SidebarSubMenu onAddItem={handleAddItem} />
-      <SidebarContent
-        onFileClick={onFileClick}
-        fileSystem={fileSystem}
-        onMoveNode={onMoveNode}
-        setActivePath={setActivePath}
-      />
-      <SidebarFooter />
-
+      {isOpen && (
+        <>
+          <SidebarSearch onSearchChange={onSearchChange} />
+          <SidebarSubMenu onAddItem={handleAddItem} />
+          <SidebarContent
+            onFileClick={onFileClick}
+            fileSystem={fileSystem}
+            onMoveNode={onMoveNode}
+            setActivePath={setActivePath}
+          />
+          <SidebarFooter />
+        </>
+      )}
       <NewItemModal
         show={showNewItemModal}
         type={newItemType}
