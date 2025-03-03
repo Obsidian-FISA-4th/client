@@ -6,10 +6,9 @@ import { Editor } from "@/components/editor/Editor"
 import { Header } from "@/components/layout/Header";
 import { AuthModal } from "@/components/modals/AuthModal"
 import { Tabs } from "@/components/tabs/Tab"
-import { addFile, addFolder, moveNode } from "@/utils/fileSystemUtils";
 import { WelcomeScreen } from "@/components/welcome/WelcomeScreen";
 import { DeployModal } from "@/components/modals/DeployModal";
-import { FileSystemProvider, useFileSystem } from "@/contexts/FileSystemContext";
+import { useFileSystemStore } from "@/store/fileSystemStore";
 
 
 /*
@@ -45,7 +44,10 @@ function MainContent() {
     handleFileRename,
     handleDeleteFile,
     handleTabClose,
-  } = useFileSystem()
+    handleAddFile,
+    handleAddFolder,
+    handleMoveNode,
+  } = useFileSystemStore()
 
   const handleAuthenticate = () => {
     setIsAuthenticated(true)
@@ -53,34 +55,6 @@ function MainContent() {
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term)
-  }
-
-  const handleAddFile = (folderPath: string, fileName: string) => {
-    const newFileSystem = { ...fileSystem }
-    const newFilePath = addFile(folderPath, fileName, "", newFileSystem)
-
-    if (newFilePath) {
-      setFileSystem(newFileSystem)
-      handleFileClick(newFilePath)
-    }
-  }
-
-  const handleAddFolder = (parentPath: string, folderName: string) => {
-    const newFileSystem = { ...fileSystem }
-    const newFolderPath = addFolder(parentPath, folderName, newFileSystem)
-
-    if (newFolderPath) {
-      setFileSystem(newFileSystem)
-    }
-  }
-
-  const handleMoveNode = (nodePath: string, targetFolderPath: string) => {
-    const newFileSystem = { ...fileSystem }
-    const success = moveNode(nodePath, targetFolderPath, newFileSystem)
-
-    if (success) {
-      setFileSystem(newFileSystem)
-    }
   }
 
   const getCurrentPath = () => {
@@ -139,9 +113,5 @@ function MainContent() {
 }
 
 export default function ObsidianClone() {
-  return (
-    <FileSystemProvider>
-      <MainContent />
-    </FileSystemProvider>
-  )
+  return <MainContent />
 }
