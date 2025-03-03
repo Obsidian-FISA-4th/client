@@ -73,6 +73,11 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
     }
   }
 
+  // 로컬 파일 업로드 버튼 처리
+  const handleUploadImage = () => {
+    document.getElementById("fileInput")?.click()
+  }
+
   if (!filePath) {
     return null
   }
@@ -98,6 +103,7 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
           onEdit={() => setIsEditMode(true)}
           onSave={handleSaveEdit}
           onDelete={handleDelete}
+          onUpload={handleUploadImage} 
         />
       </div>
 
@@ -114,12 +120,6 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
             />
             {/* 로컬 파일 선택 버튼 */}
             <div className="mt-4">
-              <button
-                onClick={() => document.getElementById("fileInput")?.click()}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                Upload Image
-              </button>
               <input
                 id="fileInput"
                 type="file"
