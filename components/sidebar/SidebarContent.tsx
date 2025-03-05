@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FileText, FolderClosed, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react'
 import { FileSystemNode, FolderNode } from '@/data/initialFileSystem'
+import { useFileSystemStore } from '@/store/fileSystemStore'
 
 interface DragItem {
   node: FileSystemNode
@@ -22,6 +23,8 @@ export function SidebarContent({
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
+  const handleFileClick = useFileSystemStore((state) => state.handleFileClick)
+
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
@@ -98,7 +101,7 @@ export function SidebarContent({
           key={node.id}
           className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm cursor-pointer"
           onClick={() => {
-            onFileClick(node.path)
+            handleFileClick(node.path)
             setActivePath(node.path)
           }}
           draggable
