@@ -1,21 +1,18 @@
-'use client';
-
 import { useState } from "react";
+import '../styles/globals.css'
 import { useRouter } from "next/router";
+import { CommonLayout } from "@/components/layout/CommonLayout";
 import { AuthModal } from "@/components/modals/AuthModal";
 
-function MainContent() {
+export default function StudentPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isStudent, setIsStudent] = useState(false); // 권한 상태 추가
   const router = useRouter();
 
   const handleAuthenticate = (role: string) => {
-    setIsAuthenticated(true);
-    setIsStudent(role === "student");
     if (role === "student") {
-      router.push("/student");
+      setIsAuthenticated(true);
     } else {
-      router.push("/admin");
+      alert("Invalid role");
     }
   };
 
@@ -23,9 +20,5 @@ function MainContent() {
     return <AuthModal onAuthenticate={handleAuthenticate} />;
   }
 
-  return null; // 인증 후 리다이렉트되므로 아무것도 렌더링하지 않음
-}
-
-export default function ObsidianClone() {
-  return <MainContent />;
+  return <CommonLayout isStudent={true} isStudentPage={true} />;
 }

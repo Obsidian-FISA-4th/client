@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Obsidian Clone Editor',
+  title: 'Woori Eoseo-Obsidian',
   description: 'A powerful markdown editor inspired by Obsidian',
   generator: 'v0.dev',
 }
