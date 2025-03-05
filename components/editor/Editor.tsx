@@ -77,7 +77,7 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
 
       {/* 편집 모드 */}
       {isEditMode ? (
-        <div className="flex h-[calc(100vh-160px)]">
+        <div className="flex h-full overflow-auto">
           <div className="w-full overflow-auto sidebar-content">
             <MDEditor
               value={editableContent}
@@ -91,7 +91,10 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
         /* 보기 모드 */
         <div className="p-4 overflow-auto h-[calc(100vh-160px)] sidebar-content">
           <div className="max-w-3xl mx-auto prose dark:prose-invert">
-            <MDEditor.Markdown source={editableContent} />
+            <MDEditor.Markdown 
+              source={editableContent} 
+              className="prose dark:prose-invert text-black dark:text-white"
+              style={{ backgroundColor: "transparent"}}/>
           </div>
         </div>
       )}
