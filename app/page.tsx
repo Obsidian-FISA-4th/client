@@ -5,10 +5,11 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Editor } from "@/components/editor/Editor"
 import { Header } from "@/components/layout/Header";
 import { AuthModal } from "@/components/modals/AuthModal"
-import { Tabs } from "@/components/tabs/Tab"
+
 import { WelcomeScreen } from "@/components/welcome/WelcomeScreen";
 import { DeployModal } from "@/components/modals/DeployModal";
 import { useFileSystemStore } from "@/store/fileSystemStore";
+import { Tabs } from "@/components/tabs/Tabs";
 
 
 /*
@@ -87,7 +88,6 @@ function MainContent() {
         />
         <div className="flex flex-col flex-1 h-full overflow-hidden">
           <Header
-            toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             currentPath={activeFilePath ? getCurrentPath() : undefined}
           />
 

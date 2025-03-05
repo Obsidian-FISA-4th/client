@@ -2,14 +2,6 @@ import { create } from 'zustand'
 import { FolderNode, OpenFile, initialFileSystem } from '@/data/initialFileSystem'
 import { getFileContent, updateFileContent, renameFile, deleteFile, addFile, addFolder, moveNode } from '@/utils/fileSystemUtils'
 
-
-/*
- Zustand 스토어 설정
-    1. 파일/ 폴더 시스템 상태 관리
-    2. 상태 변경 시 JSON 형식 저장 및 불러오기 
-*/
-
-
 interface FileSystemState {
     fileSystem: FolderNode
     openFiles: OpenFile[]
@@ -39,6 +31,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
             set({
                 openFiles: openFiles.map((file) => ({ ...file, active: file.path === filePath })),
                 activeFilePath: filePath,
+                fileContent: openFiles.find((file) => file.path === filePath)?.content || "",
             })
         } else {
             const content = getFileContent(filePath, fileSystem) || `# ${filePath}\n\nStart writing here...`
@@ -93,6 +86,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
             set({
                 openFiles: newOpenFiles,
                 activeFilePath: filePath === activeFilePath ? (newOpenFiles.length > 0 ? newOpenFiles[0].path : null) : activeFilePath,
+                fileContent: filePath === activeFilePath ? (newOpenFiles.length > 0 ? newOpenFiles[0].content : "") : get().fileContent,
             })
         }
     },
@@ -128,4 +122,9 @@ useFileSystemStore.subscribe((state) => {
     const fileSystemJson = JSON.stringify(state.fileSystem, null, 2)
     console.log('Updated File System:', fileSystemJson)
     // TODO : fileSystemJson 파일 저장, 서버 전송 로직 작성 (추후)
+    // publish/folder1/~.html
+
+    // vault/folder2/~.md
+    // vault/folder3/~.md
+    // vault/folder4/~.md
 })
