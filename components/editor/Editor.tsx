@@ -113,27 +113,28 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
       {isEditMode ? (
         <div className="flex h-full overflow-auto">
           <div className="w-full overflow-auto sidebar-content">
-        <div className="flex h-[calc(100vh-160px)]">
-          <div {...getRootProps()} className="w-full overflow-auto sidebar-content">
-            <input {...getInputProps()} />
-            <MDEditor
-              value={editableContent}
-              onChange={handleContentChange}
-              height={800}
-              visiableDragbar={false}
-              data-color-mode={isDarkMode ? "light" : "dark"}
-              />
-            />
-            {/* 로컬 파일 선택 버튼 */}
-            <div className="mt-4">
-              <input
-                id="fileInput"
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                multiple 
-              />
+            <div className="flex h-[calc(100vh-160px)]">
+              <div {...getRootProps()} className="w-full overflow-auto sidebar-content">
+                <input {...getInputProps()} />
+                <MDEditor
+                  value={editableContent}
+                  onChange={handleContentChange}
+                  height={800}
+                  visiableDragbar={false}
+                  data-color-mode={isDarkMode ? "light" : "dark"}
+                />
+                {/* 로컬 파일 선택 버튼 */}
+                <div className="mt-4">
+                  <input
+                    id="fileInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    multiple 
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
