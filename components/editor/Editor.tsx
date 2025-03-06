@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import MDEditor from "@uiw/react-md-editor"
 import { IconButtons } from "../ui/IconButton"
+import { useDropzone } from "react-dropzone"
 
 interface EditorProps {
   content: string
@@ -47,6 +48,36 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
     }
   }
 
+  // 이미지 드래그 앤 드랍 처리
+  const onDrop = (acceptedFiles: File[]) => {
+    const newImages = acceptedFiles.map(file => URL.createObjectURL(file))
+    const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
+    setEditableContent(editableContent + "\n" + markdownImageTags)
+    onChange(editableContent + "\n" + markdownImageTags)
+  }
+
+  // Dropzone 설정
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    noClick: true, 
+  })
+
+  // 로컬 파일 선택 처리
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      const newImages = Array.from(files).map(file => URL.createObjectURL(file))
+      const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
+      setEditableContent(editableContent + "\n" + markdownImageTags)
+      onChange(editableContent + "\n" + markdownImageTags)
+    }
+  }
+
+  // 로컬 파일 업로드 버튼 처리
+  const handleUploadImage = () => {
+    document.getElementById("fileInput")?.click()
+  }
+
   if (!filePath) {
     return null
   }
@@ -68,12 +99,13 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
             filePath.split("/").pop()
           )}
         </div>
-        
+
         <IconButtons
           isEditMode={isEditMode}
           onEdit={() => setIsEditMode(true)}
           onSave={handleSaveEdit}
           onDelete={handleDelete}
+          onUpload={handleUploadImage} 
         />
       </div>
 
@@ -81,6 +113,9 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
       {isEditMode ? (
         <div className="flex h-full overflow-auto">
           <div className="w-full overflow-auto sidebar-content">
+        <div className="flex h-[calc(100vh-160px)]">
+          <div {...getRootProps()} className="w-full overflow-auto sidebar-content">
+            <input {...getInputProps()} />
             <MDEditor
               value={editableContent}
               onChange={handleContentChange}
@@ -88,6 +123,18 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
               visiableDragbar={false}
               data-color-mode={isDarkMode ? "light" : "dark"}
               />
+            />
+            {/* 로컬 파일 선택 버튼 */}
+            <div className="mt-4">
+              <input
+                id="fileInput"
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+                multiple 
+              />
+            </div>
           </div>
         </div>
       ) : (
