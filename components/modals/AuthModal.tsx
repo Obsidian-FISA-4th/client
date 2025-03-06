@@ -1,11 +1,9 @@
-"use client"
-
-import type React from "react"
+'use client'
 
 import { useState, useEffect } from "react"
 
 interface AuthModalProps {
-  onAuthenticate: () => void
+  onAuthenticate: (role: string) => void
 }
 
 export function AuthModal({ onAuthenticate }: AuthModalProps) {
@@ -18,7 +16,7 @@ export function AuthModal({ onAuthenticate }: AuthModalProps) {
     const checkAuth = () => {
       const isAuthenticated = document.cookie.includes("obsidian_auth=true")
       if (isAuthenticated) {
-        onAuthenticate()
+        onAuthenticate("student")
       }
       setIsChecking(false)
     }
@@ -35,7 +33,7 @@ export function AuthModal({ onAuthenticate }: AuthModalProps) {
       expiryDate.setDate(expiryDate.getDate() + 7)
       document.cookie = `obsidian_auth=true; expires=${expiryDate.toUTCString()}; path=/`
 
-      onAuthenticate()
+      onAuthenticate("student")
     } else {
       setError("Incorrect password. Please try again.")
       setPassword("")
@@ -89,4 +87,3 @@ export function AuthModal({ onAuthenticate }: AuthModalProps) {
     </div>
   )
 }
-

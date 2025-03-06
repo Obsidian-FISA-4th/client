@@ -10,7 +10,7 @@ interface DragItem {
 interface SidebarContentProps {
   onFileClick: (filePath: string) => void
   fileSystem: FolderNode
-  onMoveNode: (nodePath: string, targetFolderPath: string) => void
+  onMoveNode?: (nodePath: string, targetFolderPath: string) => void
   setActivePath: (path: string | null) => void
 }
 
@@ -24,7 +24,6 @@ export function SidebarContent({
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const handleFileClick = useFileSystemStore((state) => state.handleFileClick)
-
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
@@ -49,47 +48,57 @@ export function SidebarContent({
   }
 
   const handleDragStart = (e: React.DragEvent, node: FileSystemNode) => {
-    setDraggedItem({ node })
-    e.dataTransfer.setData("text/plain", node.path)
-    e.dataTransfer.effectAllowed = "move"
+    if (onMoveNode) {
+      setDraggedItem({ node })
+      e.dataTransfer.setData("text/plain", node.path)
+      e.dataTransfer.effectAllowed = "move"
+    }
   }
 
   const handleDragOver = (e: React.DragEvent, targetPath: string) => {
-    e.preventDefault()
-    e.stopPropagation()
+    if (onMoveNode) {
+      e.preventDefault()
+      e.stopPropagation()
 
-    if (draggedItem && draggedItem.node.path !== targetPath) {
-      if (draggedItem.node.type === "folder" && targetPath.startsWith(draggedItem.node.path + "/")) {
-        return
+      if (draggedItem && draggedItem.node.path !== targetPath) {
+        if (draggedItem.node.type === "folder" && targetPath.startsWith(draggedItem.node.path + "/")) {
+          return
+        }
+
+        setDropTarget(targetPath)
+        e.dataTransfer.dropEffect = "move"
       }
-
-      setDropTarget(targetPath)
-      e.dataTransfer.dropEffect = "move"
     }
   }
 
   const handleDragLeave = () => {
-    setDropTarget(null)
+    if (onMoveNode) {
+      setDropTarget(null)
+    }
   }
 
   const handleDrop = (e: React.DragEvent, targetFolderPath: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDropTarget(null)
+    if (onMoveNode) {
+      e.preventDefault()
+      e.stopPropagation()
+      setDropTarget(null)
 
-    if (!draggedItem || !onMoveNode) return
+      if (!draggedItem) return
 
-    if (draggedItem.node.type === "folder" && targetFolderPath.startsWith(draggedItem.node.path + "/")) {
-      return
+      if (draggedItem.node.type === "folder" && targetFolderPath.startsWith(draggedItem.node.path + "/")) {
+        return
+      }
+
+      onMoveNode(draggedItem.node.path, targetFolderPath)
+      setDraggedItem(null)
     }
-
-    onMoveNode(draggedItem.node.path, targetFolderPath)
-    setDraggedItem(null)
   }
 
   const handleDragEnd = () => {
-    setDraggedItem(null)
-    setDropTarget(null)
+    if (onMoveNode) {
+      setDraggedItem(null)
+      setDropTarget(null)
+    }
   }
 
   const renderNode = (node: FileSystemNode, depth = 0) => {
@@ -104,7 +113,7 @@ export function SidebarContent({
             handleFileClick(node.path)
             setActivePath(node.path)
           }}
-          draggable
+          draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
           style={{ paddingLeft: `${paddingLeft}px` }}
@@ -122,7 +131,7 @@ export function SidebarContent({
               toggleFolder(node.path)
               setActivePath(node.path)
             }}
-            draggable
+            draggable={!!onMoveNode}
             onDragStart={(e) => handleDragStart(e, node)}
             onDragOver={(e) => handleDragOver(e, node.path)}
             onDragLeave={handleDragLeave}

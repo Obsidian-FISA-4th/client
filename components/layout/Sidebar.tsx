@@ -9,15 +9,16 @@ import { SidebarSubMenu } from '../sidebar/SIdebarSubMenu'
 interface SidebarProps {
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-  onDeployClick: () => void
+  onDeployClick?: () => void
   isDarkMode: boolean
   toggleDarkMode: () => void
   onFileClick: (filePath: string) => void
   fileSystem: any
   onSearchChange: (term: string) => void
-  onAddFile: (folderPath: string, fileName: string) => void
-  onAddFolder: (parentPath: string, folderName: string) => void
-  onMoveNode: (nodePath: string, targetFolderPath: string) => void
+  onAddFile?: (folderPath: string, fileName: string) => void
+  onAddFolder?: (parentPath: string, folderName: string) => void
+  onMoveNode?: (nodePath: string, targetFolderPath: string) => void
+  isStudentPage?: boolean
 }
 
 export function Sidebar({
@@ -32,6 +33,7 @@ export function Sidebar({
   onAddFile,
   onAddFolder,
   onMoveNode,
+  isStudentPage = false,
 }: SidebarProps) {
   const [showNewItemModal, setShowNewItemModal] = useState(false)
   const [newItemType, setNewItemType] = useState<'file' | 'folder'>('file')
@@ -47,9 +49,9 @@ export function Sidebar({
 
   const createNewItem = () => {
     if (newItemParentPath) {
-      if (newItemType === 'file') {
+      if (newItemType === 'file' && onAddFile) {
         onAddFile(newItemParentPath, newItemName)
-      } else {
+      } else if (newItemType === 'folder' && onAddFolder) {
         onAddFolder(newItemParentPath, newItemName)
       }
     }
@@ -65,11 +67,12 @@ export function Sidebar({
         onDeployClick={onDeployClick}
         setIsOpen={setIsOpen}
         isOpen={isOpen}
+        isStudentPage={isStudentPage}
       />
       {isOpen && (
         <>
           <SidebarSearch onSearchChange={onSearchChange} />
-          <SidebarSubMenu onAddItem={handleAddItem} />
+          {onAddFile && onAddFolder && <SidebarSubMenu onAddItem={handleAddItem} />}
           <SidebarContent
             onFileClick={onFileClick}
             fileSystem={fileSystem}
@@ -79,15 +82,17 @@ export function Sidebar({
           <SidebarFooter />
         </>
       )}
-      <NewItemModal
-        show={showNewItemModal}
-        type={newItemType}
-        onClose={() => setShowNewItemModal(false)}
-        onCreate={createNewItem}
-        newItemName={newItemName}
-        setNewItemName={setNewItemName}
-        newItemParentPath={newItemParentPath}
-      />
+      {onAddFile && onAddFolder && (
+        <NewItemModal
+          show={showNewItemModal}
+          type={newItemType}
+          onClose={() => setShowNewItemModal(false)}
+          onCreate={createNewItem}
+          newItemName={newItemName}
+          setNewItemName={setNewItemName}
+          newItemParentPath={newItemParentPath}
+        />
+      )}
     </div>
   )
 }
