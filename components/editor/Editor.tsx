@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import MDEditor from "@uiw/react-md-editor"
-import { IconButtons } from "../ui/IconButton" 
+import { IconButtons } from "../ui/IconButton"
 
 interface EditorProps {
   content: string
@@ -51,6 +51,8 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
     return null
   }
 
+  const isDarkMode = document.documentElement.classList.contains('dark')
+
   return (
     <div className="flex-1 overflow-auto bg-white dark:bg-[#1e1e1e] relative">
       <div className="flex justify-between p-2 border-b border-gray-200 dark:border-[#333]">
@@ -82,9 +84,10 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
             <MDEditor
               value={editableContent}
               onChange={handleContentChange}
-              height={600}
+              height={800}
               visiableDragbar={false}
-            />
+              data-color-mode={isDarkMode ? "light" : "dark"}
+              />
           </div>
         </div>
       ) : (
