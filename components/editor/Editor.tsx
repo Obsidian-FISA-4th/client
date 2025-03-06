@@ -9,7 +9,7 @@ interface EditorProps {
   filePath?: string
   onDelete?: () => void
   onRename?: (oldPath: string, newName: string) => void;
-  isStudent?: boolean; // 학생 여부를 나타내는 prop 추가
+  isStudent?: boolean;
 }
 
 export function Editor({
@@ -18,11 +18,11 @@ export function Editor({
   filePath,
   onDelete,
   onRename,
-  isStudent = false, // 기본값은 false (관리자)
+  isStudent = false, 
 }: EditorProps) {
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
-  const [isEditMode, setIsEditMode] = useState(isStudent ? false : true); // 관리자일 경우 기본적으로 편집 모드로 시작
+  const [isEditMode, setIsEditMode] = useState(isStudent ? false : true); 
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {

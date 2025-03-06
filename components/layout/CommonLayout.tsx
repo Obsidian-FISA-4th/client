@@ -68,11 +68,11 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
           {activeFilePath ? (
             <Editor
               content={fileContent}
-              onChange={isStudent ? () => {} : handleContentChange}  // 학생일 경우 편집 금지
+              onChange={isStudent ? () => {} : handleContentChange}  
               filePath={activeFilePath}
-              onDelete={isStudent ? undefined : handleDeleteFile}  // 학생은 삭제 금지
-              onRename={isStudent ? undefined : handleFileRename}  // 학생은 이름 변경 금지
-              isStudent={isStudent}  // 학생 여부 전달
+              onDelete={isStudent ? undefined : handleDeleteFile} 
+              onRename={isStudent ? undefined : handleFileRename} 
+              isStudent={isStudent} 
             />
           ) : (
             <WelcomeScreen />
