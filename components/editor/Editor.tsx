@@ -82,6 +82,8 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
     return null
   }
 
+  const isDarkMode = document.documentElement.classList.contains('dark')
+
   return (
     <div className="flex-1 overflow-auto bg-white dark:bg-[#1e1e1e] relative">
       <div className="flex justify-between p-2 border-b border-gray-200 dark:border-[#333]">
@@ -109,14 +111,18 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
 
       {/* 편집 모드 */}
       {isEditMode ? (
+        <div className="flex h-full overflow-auto">
+          <div className="w-full overflow-auto sidebar-content">
         <div className="flex h-[calc(100vh-160px)]">
           <div {...getRootProps()} className="w-full overflow-auto sidebar-content">
             <input {...getInputProps()} />
             <MDEditor
               value={editableContent}
               onChange={handleContentChange}
-              height={600}
+              height={800}
               visiableDragbar={false}
+              data-color-mode={isDarkMode ? "light" : "dark"}
+              />
             />
             {/* 로컬 파일 선택 버튼 */}
             <div className="mt-4">
@@ -135,7 +141,10 @@ export function Editor({ content, onChange, filePath, onDelete, onRename }: Edit
         /* 보기 모드 */
         <div className="p-4 overflow-auto h-[calc(100vh-160px)] sidebar-content">
           <div className="max-w-3xl mx-auto prose dark:prose-invert">
-            <MDEditor.Markdown source={editableContent} />
+            <MDEditor.Markdown 
+              source={editableContent} 
+              className="prose dark:prose-invert text-black dark:text-white"
+              style={{ backgroundColor: "transparent"}}/>
           </div>
         </div>
       )}
