@@ -28,7 +28,8 @@ export function Editor({
   useEffect(() => {
     setEditableContent(content)
     setEditableTitle(filePath ? filePath.split("/").pop() || "" : "")
-  }, [content, filePath])
+    setIsEditMode(!isStudent); 
+  }, [content, filePath, isStudent])
 
   // 파일 수정 핸들러
   const handleContentChange = (value: string | undefined) => {
@@ -46,7 +47,7 @@ export function Editor({
       onRename(filePath, editableTitle);
     }
 
-    alert("수정이 완료되었습니다!");
+    setIsEditMode(false);
   };
 
   // 파일 삭제
