@@ -10,6 +10,8 @@ interface EditorProps {
   onDelete?: () => void
   onRename?: (oldPath: string, newName: string) => void;
   isStudent?: boolean;
+  isDarkMode: boolean
+  toggleDarkMode: () => void
 }
 
 export function Editor({
@@ -19,15 +21,12 @@ export function Editor({
   onDelete,
   onRename,
   isStudent = false, 
+  isDarkMode,
+  toggleDarkMode,
 }: EditorProps) {
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
   const [isEditMode, setIsEditMode] = useState(isStudent ? false : true); 
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.remove('dark');
-  }, []);
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
@@ -92,12 +91,6 @@ export function Editor({
     document.getElementById("fileInput")?.click()
   }
 
-  // 다크 모드 토글
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark', isDarkMode);
-  }
-
   if (!filePath) {
     return null
   }
@@ -120,12 +113,6 @@ export function Editor({
         </div>
 
         <div className="flex items-center">
-          <button
-            onClick={toggleDarkMode}
-            className="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
-          >
-            {isDarkMode ? "Light Mode" : "Dark Mode"}
-          </button>
           {!isStudent && (
             <IconButtons
               isEditMode={isEditMode}
@@ -151,7 +138,7 @@ export function Editor({
                   onChange={handleContentChange}
                   height={800}
                   visiableDragbar={false}
-                  data-color-mode={isDarkMode ? "light" : "dark"}
+                  data-color-mode={isDarkMode ? "dark" : "light"}
                 />
                 {/* 로컬 파일 선택 버튼 */}
                 <div className="mt-4">
