@@ -12,6 +12,7 @@ interface EditorProps {
   isStudent?: boolean;
   isDarkMode: boolean
   toggleDarkMode: () => void
+
 }
 
 export function Editor({
@@ -112,18 +113,16 @@ export function Editor({
           )}
         </div>
 
-        <div className="flex items-center">
-          {!isStudent && (
-            <IconButtons
-              isEditMode={isEditMode}
-              onEdit={() => setIsEditMode(true)}
-              onSave={handleSaveEdit}
-              onDelete={handleDelete}
-              onUpload={handleUploadImage}
-              disabled={isStudent} 
-            />
-          )}
-        </div>
+        {!isStudent && (
+          <IconButtons
+            isEditMode={isEditMode}
+            onEdit={() => setIsEditMode(true)}
+            onSave={handleSaveEdit}
+            onDelete={handleDelete}
+            onUpload={handleUploadImage}
+            disabled={isStudent} 
+          />
+        )}
       </div>
 
       {/* 편집 모드 */}

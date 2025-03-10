@@ -71,20 +71,25 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
           <Tabs openFiles={openFiles} onTabClick={handleFileClick} onTabClose={handleTabClose} />
 
           {activeFilePath ? (
-            <Editor
-              content={fileContent}
-              onChange={handleContentChange}
-              filePath={activeFilePath}
-              onDelete={ handleDeleteFile}
-              onRename={handleFileRename}
-              isDarkMode={isDarkMode}
-              toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            />
-          ) : (
-            <WelcomeScreen />
-          )}
-        </div>
-      </div>
-    </div>
-  );
+            isStudentPage ? (
+              // TODO: iframe의 src를 변환된 HTML 파일로 설정
+              <iframe src="/markdown.html" className="flex-1 h-full w-full" />
+            ) : (
+              <Editor
+                content={fileContent}
+                onChange={handleContentChange}
+                filePath={activeFilePath}
+                onDelete={handleDeleteFile}
+                onRename={handleFileRename}
+                isDarkMode={isDarkMode}
+                toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+              />
+            )
+          ) : (
+            <WelcomeScreen />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
