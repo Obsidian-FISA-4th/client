@@ -4,7 +4,7 @@ import { Tabs } from "@/components/tabs/Tabs";
 import { WelcomeScreen } from "@/components/welcome/WelcomeScreen";
 import { Editor } from "@/components/editor/Editor";
 import { useFileSystemStore } from "@/store/fileSystemStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CommonLayoutProps {
   isStudent: boolean;
@@ -15,6 +15,11 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+    // 다크 모드 변경 시 HTML 태그에 적용
+    useEffect(() => {
+      document.documentElement.classList.toggle("dark", isDarkMode);
+    }, [isDarkMode]);
 
   const {
     fileSystem,
@@ -76,6 +81,8 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
                 filePath={activeFilePath}
                 onDelete={handleDeleteFile}
                 onRename={handleFileRename}
+                isDarkMode={isDarkMode}
+                toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
               />
             )
           ) : (

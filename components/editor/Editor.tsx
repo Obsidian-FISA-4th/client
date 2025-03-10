@@ -10,6 +10,9 @@ interface EditorProps {
   onDelete?: () => void
   onRename?: (oldPath: string, newName: string) => void;
   isStudent?: boolean;
+  isDarkMode: boolean
+  toggleDarkMode: () => void
+
 }
 
 export function Editor({
@@ -19,6 +22,8 @@ export function Editor({
   onDelete,
   onRename,
   isStudent = false, 
+  isDarkMode,
+  toggleDarkMode,
 }: EditorProps) {
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
@@ -91,8 +96,6 @@ export function Editor({
     return null
   }
 
-  const isDarkMode = document.documentElement.classList.contains('dark')
-
   return (
     <div className="flex-1 overflow-auto bg-white dark:bg-[#1e1e1e] relative">
       <div className="flex justify-between p-2 border-b border-gray-200 dark:border-[#333]">
@@ -134,7 +137,7 @@ export function Editor({
                   onChange={handleContentChange}
                   height={800}
                   visiableDragbar={false}
-                  data-color-mode={isDarkMode ? "light" : "dark"}
+                  data-color-mode={isDarkMode ? "dark" : "light"}
                 />
                 {/* 로컬 파일 선택 버튼 */}
                 <div className="mt-4">
@@ -166,5 +169,3 @@ export function Editor({
     </div>
   )
 }
-
-
