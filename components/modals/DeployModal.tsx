@@ -42,7 +42,7 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
       const newSelectedFiles = [...selectedFiles, file]
       setSelectedFiles(newSelectedFiles)
 
-      // Check if all unpublished files are now selected
+      // 모든 배포되지 않은 파일이 선택되었는지 확인
       const allUnpublishedSelected = unpublishedFiles.every((f) => newSelectedFiles.includes(f.path))
       setSelectAllUnpublished(allUnpublishedSelected)
     }
@@ -50,59 +50,59 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
 
   const toggleSelectAllUnpublished = () => {
     if (selectAllUnpublished) {
-      // Deselect all unpublished files
+      // 모든 배포되지 않은 파일 선택 해제
       setSelectedFiles([])
     } else {
-      // Select all unpublished files
+      // 모든 배포되지 않은 파일 선택
       const unpublishedPaths = unpublishedFiles.map((f) => f.path)
       setSelectedFiles(unpublishedPaths)
     }
     setSelectAllUnpublished(!selectAllUnpublished)
   }
 
-  // Update the handleDeploy function to store the count of deployed files before clearing the selection
+  // handleDeploy 함수를 업데이트하여 선택을 지우기 전에 배포된 파일의 수를 저장
   const handleDeploy = () => {
-    // Show deploying state
+    // 배포 상태 표시
     setIsDeploying(true)
 
-    // Store the number of files being deployed
+    // 배포되는 파일의 수 저장
     const deployedFilesCount = selectedFiles.length
 
-    // Simulate deployment process
+    // 배포 프로세스 시뮬레이션
     setTimeout(() => {
-      // Move selected files from unpublished to published
+      // 선택된 파일을 배포되지 않은 파일에서 배포된 파일로 이동
       const filesToMove = unpublishedFiles.filter((file) => selectedFiles.includes(file.path))
 
-      // Update the current date for the deployed files
+      // 배포된 파일의 현재 날짜 업데이트
       const today = new Date()
       const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
       const movedFiles = filesToMove.map((file) => ({
         ...file,
-        lastModified: formattedDate, // Update the last modified date to today
+        lastModified: formattedDate, // 마지막 수정 날짜를 오늘로 업데이트
       }))
 
-      // Update the published files list
+      // 배포된 파일 목록 업데이트
       setPublishedFiles((prev) => [...prev, ...movedFiles])
 
-      // Remove the moved files from unpublished
+      // 배포된 파일을 배포되지 않은 파일에서 제거
       setUnpublishedFiles((prev) => prev.filter((file) => !selectedFiles.includes(file.path)))
 
-      // Clear selection
+      // 선택 지우기
       setSelectedFiles([])
       setSelectAllUnpublished(false)
 
       console.log("Deployed files:", filesToMove)
       setIsDeploying(false)
 
-      // Set success state with the stored count
+      // 저장된 수로 성공 상태 설정
       setDeploySuccess(deployedFilesCount)
 
-      // Auto-hide the success message after 3 seconds
+      // 3초 후에 성공 메시지 자동 숨기기
       setTimeout(() => {
         setDeploySuccess(false)
       }, 3000)
-    }, 1500) // Simulate a 1.5s deployment process
+    }, 1500) // 1.5초 배포 프로세스 시뮬레이션
   }
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
         </div>
 
         <div className="p-4 max-h-[60vh] overflow-y-auto">
-          {/* Published Files Section */}
+          {/* 배포된 파일 섹션 */}
           <div className="mb-6">
             <div className="flex items-center mb-3">
               <CheckCircle size={16} className="text-green-500 mr-2" />
@@ -150,7 +150,7 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
             </div>
           </div>
 
-          {/* Unpublished Files Section */}
+          {/* 배포되지 않은 파일 섹션 */}
           <div>
             <div className="flex items-center mb-3">
               <Upload size={16} className="text-blue-500 mr-2" />
@@ -254,4 +254,3 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
     </div>
   )
 }
-
