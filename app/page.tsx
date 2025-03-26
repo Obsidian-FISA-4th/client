@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { AuthModal } from "@/components/modals/AuthModal";
+import dotenv from 'dotenv';
+
+// 환경변수 로드
+dotenv.config();
 
 function MainContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

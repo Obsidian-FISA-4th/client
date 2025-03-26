@@ -6,6 +6,7 @@ import { SidebarContent } from '../sidebar/SidebarContent'
 import { NewItemModal } from '../modals/NewItemModal'
 import { SidebarSubMenu } from '../sidebar/SIdebarSubMenu'
 
+
 interface SidebarProps {
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
@@ -43,16 +44,16 @@ export function Sidebar({
 
   const handleAddItem = (type: 'file' | 'folder') => {
     setNewItemType(type)
-    setNewItemParentPath(activePath) // 현재 활성화된 경로로 설정
+    setNewItemParentPath(activePath || '/') // 현재 활성화된 경로로 설정, 기본값은 루트 경로
     setShowNewItemModal(true)
   }
 
-  const createNewItem = () => {
+  const createNewItem = async () => {
     if (newItemParentPath) {
       if (newItemType === 'file' && onAddFile) {
-        onAddFile(newItemParentPath, newItemName)
+        await onAddFile(newItemParentPath, newItemName)
       } else if (newItemType === 'folder' && onAddFolder) {
-        onAddFolder(newItemParentPath, newItemName)
+        await onAddFolder(newItemParentPath, newItemName)
       }
     }
     setShowNewItemModal(false)
