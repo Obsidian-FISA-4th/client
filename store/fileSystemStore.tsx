@@ -1,7 +1,11 @@
 import { create } from 'zustand'
-import { fetchFileSystemData, createFileOrFolder } from '@/utils/api'
-import { getRelativePath } from '@/utils/fileSystemUtils'
+import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder } from '@/utils/api'
+import { getRelativePath, moveNode, getRelativePath2 } from '@/utils/fileSystemUtils'
 
+
+/**
+ * Zustand을 통한 파일 시스템 관리
+ */
 export interface FileSystemNode {
   id: string
   name: string
@@ -34,7 +38,7 @@ interface FileSystemState {
   handleTabClose: (filePath: string) => void
   handleAddFile: (folderPath: string, fileName: string) => Promise<void>
   handleAddFolder: (parentPath: string, folderName: string) => Promise<void>
-  handleMoveNode: (nodePath: string, targetFolderPath: string) => void
+  handleMoveNode: (nodePath: string, targetFolderPath: string) => Promise <void>
 }
 
 const transformApiResponse = (data: any[]): FileSystemNode[] => {
@@ -148,12 +152,21 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
       console.error('Error adding folder:', error)
     }
   },
-  handleMoveNode: (nodePath, targetFolderPath) => {
-    const { fileSystem } = get()
-    const newFileSystem = { ...fileSystem }
-    const success = moveNode(nodePath, targetFolderPath, newFileSystem)
-    if (success) {
-      set({ fileSystem: newFileSystem })
+
+  handleMoveNode: async (nodePath, targetFolderPath) => {
+    try {
+      const relativeNodePath = getRelativePath2(nodePath)
+      const relativeTargetFolderPath = getRelativePath2(targetFolderPath)
+      await moveFileOrFolder(relativeNodePath, relativeTargetFolderPath)
+      const { fileSystem } = get()
+      const newFileSystem = { ...fileSystem }
+      const success = moveNode(relativeNodePath, relativeTargetFolderPath, newFileSystem)
+      if (success) {
+        set({ fileSystem: newFileSystem })
+      }
+      await get().fetchFileSystem()
+    } catch (error) {
+      console.error('Error moving node:', error)
     }
   },
 }))
