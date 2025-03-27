@@ -53,6 +53,26 @@ const transformApiResponse = (data: any[]): FileSystemNode[] => {
     }))
 }
 
+// getFileContent 함수 추가 (파일 내용 가져오기)
+const getFileContent = (filePath: string, fileSystem: FolderNode | null): string | null => {
+  if (!fileSystem) return null;
+
+  const findFile = (node: FileSystemNode): FileSystemNode | null => {
+    if (node.path === filePath) return node;
+    if (node.type === 'folder' && node.children) {
+      for (const child of node.children) {
+        const result = findFile(child);
+        if (result) return result;
+      }
+    }
+    return null;
+  };
+
+  const fileNode = findFile(fileSystem);
+  return fileNode && fileNode.type === 'file' ? fileNode.name : null; 
+};
+
+
 export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   fileSystem: null,
   openFiles: [],
@@ -72,12 +92,14 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
     const { openFiles, fileSystem } = get()
     const isFileOpen = openFiles.some((file) => file.path === filePath)
     if (isFileOpen) {
+      // 파일이 열려 있는 경우 활성화
       set({
         openFiles: openFiles.map((file) => ({ ...file, active: file.path === filePath })),
         activeFilePath: filePath,
         fileContent: openFiles.find((file) => file.path === filePath)?.content || "",
       })
     } else {
+      // 파일이 열려있지 않은 경우 새로 열기
       const content = getFileContent(filePath, fileSystem) || `# ${filePath}\n\nStart writing here...`
       set({
         openFiles: [...openFiles.map((file) => ({ ...file, active: false })), { path: filePath, content, active: true }],
