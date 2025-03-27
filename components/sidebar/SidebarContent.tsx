@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FileText, FolderClosed, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react'
-import { FileSystemNode, FolderNode } from '@/data/initialFileSystem'
-import { useFileSystemStore } from '@/store/fileSystemStore'
+import { useFileSystemStore, FileSystemNode } from '@/store/fileSystemStore'
 
 interface DragItem {
   node: FileSystemNode
@@ -9,21 +8,24 @@ interface DragItem {
 
 interface SidebarContentProps {
   onFileClick: (filePath: string) => void
-  fileSystem: FolderNode
   onMoveNode?: (nodePath: string, targetFolderPath: string) => void
   setActivePath: (path: string | null) => void
 }
 
 export function SidebarContent({
   onFileClick,
-  fileSystem,
   onMoveNode,
   setActivePath,
 }: SidebarContentProps) {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const handleFileClick = useFileSystemStore((state) => state.handleFileClick)
+  const fileSystem = useFileSystemStore((state) => state.fileSystem)
+  const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
+
+  useEffect(() => {
+    fetchFileSystem()
+  }, [fetchFileSystem])
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
@@ -36,8 +38,10 @@ export function SidebarContent({
       }
     }
 
-    initializeExpandedState(fileSystem)
-    setExpandedFolders((prev) => ({ ...initialExpandedFolders, ...prev }))
+    if (fileSystem) {
+      initializeExpandedState(fileSystem)
+      setExpandedFolders((prev) => ({ ...initialExpandedFolders, ...prev }))
+    }
   }, [fileSystem])
 
   const toggleFolder = (folderPath: string) => {
@@ -109,8 +113,9 @@ export function SidebarContent({
         <div
           key={node.id}
           className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm cursor-pointer"
-          onClick={() => {
-            handleFileClick(node.path)
+          onClick={(e) => {
+            e.stopPropagation()
+            onFileClick(node.path)
             setActivePath(node.path)
           }}
           draggable={!!onMoveNode}
@@ -127,7 +132,8 @@ export function SidebarContent({
         <div key={node.id}>
           <div
             className={`flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] cursor-pointer ${dropTarget === node.path ? "bg-blue-100 dark:bg-blue-900" : ""}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               toggleFolder(node.path)
               setActivePath(node.path)
             }}
@@ -151,8 +157,13 @@ export function SidebarContent({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto sidebar-content">
-      {fileSystem.children.map((node: FileSystemNode) => renderNode(node))}
+    <div
+      className="flex-1 overflow-y-auto sidebar-content"
+      onClick={() => {
+        setActivePath('/')
+      }}
+    >
+      {fileSystem && fileSystem.children.map((node: FileSystemNode) => renderNode(node))}
     </div>
   )
 }

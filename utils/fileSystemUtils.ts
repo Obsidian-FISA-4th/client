@@ -1,9 +1,3 @@
-/*
-    파일 시스템 관련 유틸리티 함수 구현
-    파일/폴더 추가, 이동, 이름 변경, 삭제, 내용 조회, 내용 수정 등의 기능을 제공
-*/
-
-
 export interface FileNode {
     id: string
     name: string
@@ -26,6 +20,34 @@ export interface FolderNode {
 
 type FileSystemNode = FileNode | FolderNode
 
+
+/* 상대 경로 변환 유틸리티 함수 */
+export const getRelativePath = (fullPath: string) => {
+    const base = '/Users/msy/note/';
+    return fullPath.startsWith(base) ? fullPath.substring(base.length) : fullPath;
+}
+
+
+export const getRelativePath2 = (fullPath: string) => {
+    const base = '/Users/msy/';
+    return fullPath.startsWith(base) ? fullPath.substring(base.length) : fullPath;
+}
+
+
+
+
+function findFolder(path: string, folder: FolderNode): FolderNode | null {
+    if (folder.path === path) return folder
+    for (const child of folder.children) {
+        if (child.type === "folder") {
+            const result = findFolder(path, child)
+            if (result) return result
+        }
+    }
+    return null
+}
+
+
 function sortChildren(children: (FileNode | FolderNode)[]): (FileNode | FolderNode)[] {
     return children.sort((a, b) => {
         if (a.type === "folder" && b.type === "file") return -1
@@ -34,16 +56,19 @@ function sortChildren(children: (FileNode | FolderNode)[]): (FileNode | FolderNo
     })
 }
 
+
+
+/************* 폴더 및 파일 생성 start******************/
 export function addFolder(parentPath: string, folderName: string, fileSystem: FolderNode): string | null {
-    const parent = findFolder(parentPath, fileSystem)
+    const relativeParentPath = getRelativePath(parentPath)
+    const parent = relativeParentPath === '' ? fileSystem : findFolder(relativeParentPath, fileSystem)
     if (!parent) return null
 
     // 새로운 폴더 ID 생성
     const folderId = folderName.toLowerCase().replace(/[^a-z0-9]/g, "-")
 
     // 전체 경로 생성
-    const folderPath = parentPath ? `${parentPath}/${folderName}` : folderName
-
+    const folderPath = relativeParentPath ? `${relativeParentPath}/${folderName}` : folderName
 
     // 새로운 폴더 생성
     const newFolder: FolderNode = {
@@ -56,7 +81,6 @@ export function addFolder(parentPath: string, folderName: string, fileSystem: Fo
         depth: parent.depth + 1,
     }
 
-
     // 폴더를 부모 폴더에 추가
     parent.children.push(newFolder)
     parent.children = sortChildren(parent.children)
@@ -64,15 +88,17 @@ export function addFolder(parentPath: string, folderName: string, fileSystem: Fo
     return folderPath
 }
 
+
 export function addFile(parentPath: string, fileName: string, content = "", fileSystem: FolderNode): string | null {
-    const parent = findFolder(parentPath, fileSystem)
+    const relativeParentPath = getRelativePath(parentPath)
+    const parent = relativeParentPath === '' ? fileSystem : findFolder(relativeParentPath, fileSystem)
     if (!parent) return null
 
     // 새로운 파일 ID 생성
     const fileId = fileName.toLowerCase().replace(/[^a-z0-9]/g, "-")
 
     // 전체 경로 생성
-    const filePath = parentPath ? `${parentPath}/${fileName}` : fileName
+    const filePath = relativeParentPath ? `${relativeParentPath}/${fileName}` : fileName
 
     // 새로운 파일 생성
     const newFile: FileNode = {
@@ -97,8 +123,8 @@ Start writing here...`,
 }
 
 
+/************* 폴더 및 파일 이동 start******************/
 export function moveNode(nodePath: string, targetFolderPath: string, fileSystem: FolderNode): boolean {
-    // 이동할 노드 찾기
     const nodeToMove: FileSystemNode | null = null
     const nodeParent: FolderNode | null = null
 
@@ -163,124 +189,4 @@ export function moveNode(nodePath: string, targetFolderPath: string, fileSystem:
     return true
 }
 
-export function getFileContent(path: string, fileSystem: FolderNode): string | null {
-    // 경로로 파일을 찾는 헬퍼 함수
-    function findFile(node: FileSystemNode, targetPath: string): FileNode | null {
-        if (node.type === "file" && node.path === targetPath) {
-            return node
-        }
-
-        if (node.type === "folder") {
-            for (const child of node.children) {
-                const found = findFile(child, targetPath)
-                if (found) return found
-            }
-        }
-
-        return null
-    }
-
-    const file = findFile(fileSystem, path)
-    return file ? file.content : null
-}
-
-export function updateFileContent(path: string, content: string, fileSystem: FolderNode): void {
-    // 경로로 파일을 찾아 업데이트 하는 헬퍼 함수
-    function findAndUpdateFile(node: FileSystemNode, targetPath: string): boolean {
-        if (node.type === "file" && node.path === targetPath) {
-            node.content = content
-            return true
-        }
-
-        if (node.type === "folder") {
-            for (const child of node.children) {
-                if (findAndUpdateFile(child, targetPath)) return true
-            }
-        }
-
-        return false
-    }
-
-    findAndUpdateFile(fileSystem, path)
-}
-
-export function renameFile(oldPath: string, newName: string, fileSystem: FolderNode): string | null {
-    // 경로로 파일을 찾아 이름을 변경하는 헬퍼 함수
-    function findAndRenameFile(node: FileSystemNode, targetPath: string): { success: boolean; newPath: string | null } {
-        if (node.type === "file" && node.path === targetPath) {
-            // 디렉토리 경로 가져오기
-            const pathParts = node.path.split("/")
-            pathParts.pop() // Remove the filename
-            const dirPath = pathParts.join("/")
-
-            // 새로운 경로 생성
-            const newPath = dirPath ? `${dirPath}/${newName}` : newName
-
-            // 파일 업데이트
-            node.name = newName
-            node.path = newPath
-
-            return { success: true, newPath }
-        }
-
-        if (node.type === "folder") {
-            for (const child of node.children) {
-                const result = findAndRenameFile(child, targetPath)
-                if (result.success) return result
-            }
-        }
-
-        return { success: false, newPath: null }
-    }
-
-    const result = findAndRenameFile(fileSystem, oldPath)
-    return result.newPath
-}
-
-export function deleteFile(path: string, fileSystem: FolderNode): boolean {
-    // Helper function to find a file's parent folder
-    function findParentFolder(node: FolderNode, targetPath: string): FolderNode | null {
-        for (let i = 0; i < node.children.length; i++) {
-            const child = node.children[i]
-
-            if (child.type === "file" && child.path === targetPath) {
-                return node
-            }
-
-            if (child.type === "folder") {
-                const found = findParentFolder(child, targetPath)
-                if (found) return found
-            }
-        }
-
-        return null
-    }
-
-    const parent = findParentFolder(fileSystem, path)
-    if (!parent) return false
-
-    // Remove the file from its parent
-    parent.children = parent.children.filter((child) => child.path !== path)
-    return true
-}
-
-export function findFolder(path: string, fileSystem: FolderNode): FolderNode | null {
-    if (path === "") return fileSystem
-
-    function findFolderNode(node: FileSystemNode, targetPath: string): FolderNode | null {
-        if (node.type === "folder" && node.path === targetPath) {
-            return node
-        }
-
-        if (node.type === "folder") {
-            for (const child of node.children) {
-                const found = findFolderNode(child, targetPath)
-                if (found) return found
-            }
-        }
-
-        return null
-    }
-
-    return findFolderNode(fileSystem, path)
-}
+/************* 폴더 및 파일 이동end******************/
