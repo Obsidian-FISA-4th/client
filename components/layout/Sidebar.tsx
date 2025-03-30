@@ -80,7 +80,7 @@ export function Sidebar({
             onMoveNode={onMoveNode}
             setActivePath={setActivePath}
           />
-          <SidebarFooter />
+          {!isStudentPage && <SidebarFooter />}
         </>
       )}
       {onAddFile && onAddFolder && (

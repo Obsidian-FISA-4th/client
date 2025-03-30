@@ -37,7 +37,7 @@ export function SidebarHeader({
           </button>
         </div>
       )}
-      {isOpen && <div className="text-sm font-medium">My Vault</div>}
+      {isOpen && <div className="text-sm font-medium">Service dev</div>}
       {isOpen && (
         <div className="flex items-center gap-1">
           <button className="p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333]" onClick={toggleDarkMode}>
