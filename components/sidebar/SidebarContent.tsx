@@ -20,6 +20,7 @@ export function SidebarContent({
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
+  const [selectedPath, setSelectedPath] = useState<string | null>(null) // 클릭된 항목 추적
   const fileSystem = useFileSystemStore((state) => state.fileSystem)
   const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
 
@@ -112,11 +113,14 @@ export function SidebarContent({
       return (
         <div
           key={node.id}
-          className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm cursor-pointer"
+          className={`flex items-center gap-1 p-1 rounded text-sm cursor-pointer ${
+            selectedPath === node.path ? "bg-gray-300 dark:bg-gray-700" : "hover:bg-gray-200 dark:hover:bg-[#333]"
+          }`}
           onClick={(e) => {
             e.stopPropagation()
             onFileClick(node.path)
             setActivePath(node.path)
+            setSelectedPath(node.path) // 클릭된 항목 설정
           }}
           draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
@@ -131,11 +135,14 @@ export function SidebarContent({
       return (
         <div key={node.id}>
           <div
-            className={`flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] cursor-pointer ${dropTarget === node.path ? "bg-blue-100 dark:bg-blue-900" : ""}`}
+            className={`flex items-center gap-1 p-1 rounded cursor-pointer ${
+              selectedPath === node.path ? "bg-gray-300 dark:bg-gray-700" : "hover:bg-gray-200 dark:hover:bg-[#333]"
+            } ${dropTarget === node.path ? "bg-blue-100 dark:bg-blue-900" : ""}`}
             onClick={(e) => {
               e.stopPropagation()
               toggleFolder(node.path)
               setActivePath(node.path)
+              setSelectedPath(node.path) // 클릭된 항목 설정
             }}
             draggable={!!onMoveNode}
             onDragStart={(e) => handleDragStart(e, node)}
@@ -161,6 +168,7 @@ export function SidebarContent({
       className="flex-1 overflow-y-auto sidebar-content"
       onClick={() => {
         setActivePath('/')
+        setSelectedPath(null) 
       }}
     >
       {fileSystem && fileSystem.children.map((node: FileSystemNode) => renderNode(node))}
