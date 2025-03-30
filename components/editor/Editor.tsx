@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import MDEditor from "@uiw/react-md-editor"
 import { IconButtons } from "../ui/IconButton"
 import { useDropzone } from "react-dropzone"
+import { uploadImages } from '@/lib/api'
+
 
 interface EditorProps {
   content: string
@@ -28,6 +30,7 @@ export function Editor({
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
   const [isEditMode, setIsEditMode] = useState(isStudent ? false : true); 
+  const [localImages, setLocalImages] = useState<File[]>([]); // 로컬에서 추가된 이미지 파일들
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
@@ -45,11 +48,19 @@ export function Editor({
   }
 
   // 파일 수정 저장
-  const handleSaveEdit = () => {
-    onChange(editableContent);
+  const handleSaveEdit = async () => {
   
     if (filePath && onRename && editableTitle !== filePath.split("/").pop()) {
       onRename(filePath, editableTitle);
+    }
+
+    // 이미지 업로드
+    if (localImages.length > 0) {
+      const uploadedImageUrls = await uploadImages(localImages);
+      const markdownImageTags = uploadedImageUrls.map((url) => `![](${url})`).join("\n");
+      setEditableContent((prevContent) => prevContent + "\n" + markdownImageTags);
+      onChange(editableContent);
+      setLocalImages([]); // 업로드 후 로컬 이미지 초기화
     }
 
     setIsEditMode(false);
@@ -64,6 +75,7 @@ export function Editor({
 
   // 이미지 드래그 앤 드랍 처리
   const onDrop = (acceptedFiles: File[]) => {
+    setLocalImages((prev) => [...prev, ...acceptedFiles]); // 로컬 이미지 추가
     const newImages = acceptedFiles.map(file => URL.createObjectURL(file))
     const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
     setEditableContent(editableContent + "\n" + markdownImageTags)
@@ -80,6 +92,8 @@ export function Editor({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files) {
+      const fileArray = Array.from(files);
+      setLocalImages((prev) => [...prev, ...fileArray]); // 로컬 이미지 추가
       const newImages = Array.from(files).map(file => URL.createObjectURL(file))
       const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
       setEditableContent(editableContent + "\n" + markdownImageTags)

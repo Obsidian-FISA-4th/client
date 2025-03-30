@@ -51,3 +51,25 @@ export const moveFileOrFolder = async (path: string, to: string) => {
     throw error
   }
 }
+
+
+
+// 이미지 로컬 저장 api
+export const uploadImages = async (files: File[]): Promise<string[]> => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  try {
+    const response = await apiClient.post('/images', formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data.result; // API에서 반환된 이미지 URL 배열
+  } catch (error) {
+    console.error("Error uploading images:", error);
+    throw error;
+  }
+};
