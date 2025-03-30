@@ -1,7 +1,10 @@
 import { create } from 'zustand'
-import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder } from '@/utils/api'
-import { getRelativePath, moveNode, getRelativePath2 } from '@/utils/fileSystemUtils'
+import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder } from '@/lib/api'
+import { getRelativePath, moveNode} from '@/lib/fileSystemUtils'
 
+
+const BASE_URL = process.env.BASE_URL;
+const HOME_DIR = process.env.HOME_DIR;
 
 /**
  * Zustand을 통한 파일 시스템 관리
@@ -222,7 +225,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   },
   handleAddFile: async (folderPath, fileName) => {
     try {
-      const relativePath = getRelativePath(folderPath)
+      const relativePath = getRelativePath(folderPath, BASE_URL);
       await createFileOrFolder(relativePath + '/' + fileName, 'file')
       await get().fetchFileSystem()
     } catch (error) {
@@ -231,7 +234,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   },
   handleAddFolder: async (parentPath, folderName) => {
     try {
-      const relativePath = getRelativePath(parentPath)
+      const relativePath = getRelativePath(parentPath, BASE_URL);
       await createFileOrFolder(relativePath + '/' + folderName, 'folder')
       await get().fetchFileSystem()
     } catch (error) {
@@ -241,8 +244,8 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
   handleMoveNode: async (nodePath, targetFolderPath) => {
     try {
-      const relativeNodePath = getRelativePath2(nodePath)
-      const relativeTargetFolderPath = getRelativePath2(targetFolderPath)
+      const relativeNodePath = getRelativePath(nodePath, HOME_DIR)
+      const relativeTargetFolderPath = getRelativePath(targetFolderPath, HOME_DIR)
       await moveFileOrFolder(relativeNodePath, relativeTargetFolderPath)
       const { fileSystem } = get()
       const newFileSystem = { ...fileSystem }

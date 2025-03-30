@@ -1,6 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import '../styles/globals.css'
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { CommonLayout } from "@/components/layout/CommonLayout";
 import { AuthModal } from "@/components/modals/AuthModal";
 
