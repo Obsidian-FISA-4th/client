@@ -53,6 +53,71 @@ const transformApiResponse = (data: any[]): FileSystemNode[] => {
     }))
 }
 
+// getFileContent 함수 추가 (파일 내용 가져오기)
+const getFileContent = (filePath: string, fileSystem: FolderNode | null): string | null => {
+  if (!fileSystem) return null;
+
+  const findFile = (node: FileSystemNode): FileSystemNode | null => {
+    if (node.path === filePath) return node;
+    if (node.type === 'folder' && node.children) {
+      for (const child of node.children) {
+        const result = findFile(child);
+        if (result) return result;
+      }
+    }
+    return null;
+  };
+
+  const fileNode = findFile(fileSystem);
+  return fileNode && fileNode.type === 'file' ? fileNode.name : null; 
+};
+
+// updateFileContent 함수 추가 (파일 내용 업데이트)
+const updateFileContent = (filePath: string, newContent: string, fileSystem: FolderNode | null): void => {
+  if (!fileSystem) return;
+
+  const findAndUpdateFile = (node: FileSystemNode): boolean => {
+    if (node.path === filePath && node.type === 'file') {
+      node.content = newContent; 
+      return true;
+    }
+    if (node.type === 'folder' && node.children) {
+      for (const child of node.children) {
+        if (findAndUpdateFile(child)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  findAndUpdateFile(fileSystem);
+};
+
+// renameFile 함수 추가 (파일 이름 변경)
+const renameFile = (oldPath: string, newName: string, fileSystem: FolderNode): string | null => {
+  const findAndRename = (node: FileSystemNode): boolean => {
+    if (node.path === oldPath) {
+      const pathParts = node.path.split('/');
+      pathParts[pathParts.length - 1] = newName; 
+      node.path = pathParts.join('/');
+      node.name = newName; 
+      return true;
+    }
+    if (node.type === 'folder' && node.children) {
+      for (const child of node.children) {
+        if (findAndRename(child)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const success = findAndRename(fileSystem);
+  return success ? oldPath.replace(/[^/]+$/, newName) : null; 
+};
+
 export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   fileSystem: null,
   openFiles: [],
@@ -72,12 +137,14 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
     const { openFiles, fileSystem } = get()
     const isFileOpen = openFiles.some((file) => file.path === filePath)
     if (isFileOpen) {
+      // 파일이 열려 있는 경우 활성화
       set({
         openFiles: openFiles.map((file) => ({ ...file, active: file.path === filePath })),
         activeFilePath: filePath,
         fileContent: openFiles.find((file) => file.path === filePath)?.content || "",
       })
     } else {
+      // 파일이 열려있지 않은 경우 새로 열기
       const content = getFileContent(filePath, fileSystem) || `# ${filePath}\n\nStart writing here...`
       set({
         openFiles: [...openFiles.map((file) => ({ ...file, active: false })), { path: filePath, content, active: true }],
@@ -87,27 +154,46 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
     }
   },
   handleContentChange: (newContent) => {
-    const { activeFilePath, openFiles, fileSystem } = get()
-    if (activeFilePath) {
-      const newFileSystem = { ...fileSystem }
-      updateFileContent(activeFilePath, newContent, newFileSystem)
+    const { activeFilePath, openFiles, fileSystem } = get();
+    if (activeFilePath && fileSystem) { // fileSystem이 null인지 확인
+      const newFileSystem: FolderNode = {
+        id: fileSystem.id, // 필수 속성 정의
+        name: fileSystem.name,
+        type: fileSystem.type,
+        path: fileSystem.path,
+        children: fileSystem.children || [], // children을 항상 정의
+      };
+      updateFileContent(activeFilePath, newContent, newFileSystem);
       set({
         fileContent: newContent,
-        openFiles: openFiles.map((file) => (file.path === activeFilePath ? { ...file, content: newContent } : file)),
+        openFiles: openFiles.map((file) =>
+          file.path === activeFilePath ? { ...file, content: newContent } : file
+        ),
         fileSystem: newFileSystem,
-      })
+      });
     }
   },
   handleFileRename: (oldPath, newName) => {
-    const { fileSystem, openFiles, activeFilePath } = get()
-    const newFileSystem = { ...fileSystem }
-    const newPath = renameFile(oldPath, newName, newFileSystem)
+    const { fileSystem, openFiles, activeFilePath } = get();
+    if (!fileSystem) return; // fileSystem이 null인 경우 처리
+  
+    const newFileSystem: FolderNode = {
+      id: fileSystem.id || '', // 기본값 설정
+      name: fileSystem.name || '',
+      type: fileSystem.type || 'folder',
+      path: fileSystem.path || '',
+      children: fileSystem.children || [], // children을 항상 배열로 초기화
+    };
+  
+    const newPath = renameFile(oldPath, newName, newFileSystem);
     if (newPath) {
       set({
         fileSystem: newFileSystem,
-        openFiles: openFiles.map((file) => (file.path === oldPath ? { ...file, path: newPath } : file)),
+        openFiles: openFiles.map((file) =>
+          file.path === oldPath ? { ...file, path: newPath } : file
+        ),
         activeFilePath: activeFilePath === oldPath ? newPath : activeFilePath,
-      })
+      });
     }
   },
   handleDeleteFile: () => {
