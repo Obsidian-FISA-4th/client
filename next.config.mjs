@@ -9,6 +9,9 @@ try {
 const nextConfig = {
   env: {
     API_KEY: process.env.API_KEY,
+    BASE_SRV_URL: process.env.BASE_SRV_URL,
+    BASE_URL : process.env.BASE_URL,
+    HOME_DIR : process.env.HOME_DIR
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -5,9 +5,6 @@ import { useRouter } from "next/router";
 import { AuthModal } from "@/components/modals/AuthModal";
 import dotenv from 'dotenv';
 
-// 환경변수 로드
-dotenv.config();
-
 function MainContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isStudent, setIsStudent] = useState(false); // 권한 상태 추가

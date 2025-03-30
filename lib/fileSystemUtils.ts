@@ -21,19 +21,9 @@ export interface FolderNode {
 type FileSystemNode = FileNode | FolderNode
 
 
-/* 상대 경로 변환 유틸리티 함수 */
-export const getRelativePath = (fullPath: string) => {
-    const base = '/Users/msy/note/';
+export const getRelativePath = (fullPath: string, base: string) => {
     return fullPath.startsWith(base) ? fullPath.substring(base.length) : fullPath;
-}
-
-
-export const getRelativePath2 = (fullPath: string) => {
-    const base = '/Users/msy/';
-    return fullPath.startsWith(base) ? fullPath.substring(base.length) : fullPath;
-}
-
-
+};
 
 
 function findFolder(path: string, folder: FolderNode): FolderNode | null {

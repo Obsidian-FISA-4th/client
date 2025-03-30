@@ -1,4 +1,5 @@
-import { CommonLayout } from "../components/layout/CommonLayout";
+
+import { CommonLayout } from '@/components/layout/CommonLayout';
 import '../styles/globals.css';
 
 
