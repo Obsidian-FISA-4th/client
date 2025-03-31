@@ -25,8 +25,9 @@ export interface FileSystemNode {
 
 
 export const transformApiResponse = (data: any[]): FileSystemNode[] => {
+    const excludedNames = [".DS_Store", "images", "public"]; // 제외할 이름 목록
     return data
-        .filter((item) => item.name !== ".DS_Store" && item.name !== "images") // .DS_Store, images 폴더 파일 제외
+        .filter((item) => !excludedNames.includes(item.name)) // 제외할 이름 목록에 포함되지 않은 항목만 필터링
         .map((item) => ({
             id: item.path,
             name: item.name,
@@ -37,8 +38,9 @@ export const transformApiResponse = (data: any[]): FileSystemNode[] => {
 };
 
 export const transformApiResponseForDeployModal = (data: any[]): FileSystemNode[] => {
+    const excludedNames = [".DS_Store", "images", "public"]; // 제외할 이름 목록
     return data
-        .filter((item) => item.name !== ".DS_Store" && item.name !== "images") // .DS_Store, images 폴더 파일 제외
+        .filter((item) => !excludedNames.includes(item.name)) // 제외할 이름 목록에 포함되지 않은 항목만 필터링
         .map((item) => ({
             id: item.path,
             name: item.name,

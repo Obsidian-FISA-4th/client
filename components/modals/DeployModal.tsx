@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react"
 import { X, FileText, Check, FolderClosed, FolderOpen, ChevronRight, ChevronDown } from "lucide-react"
 import { fetchFileSystemData } from "@/lib/api";
-import { transformApiResponseForDeployModal } from "@/lib/fileSystemUtils";
+import { getRelativePath, transformApiResponseForDeployModal } from "@/lib/fileSystemUtils";
+import { publishFiles, unpublishFiles } from "@/lib/api";
 
+const BASE_URL = process.env.BASE_URL || "/default/note/";
 
 // 타입 정의
 interface FileNode {
@@ -166,25 +168,39 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
   }
 
   // 배포 처리
-  const handleDeploy = () => {
-    // 배포할 파일 (선택된 파일)
+  const handleDeploy = async () => {
+    try {
+      // 배포할 파일 (선택된 파일 중 배포되지 않은 파일)
     const filesToDeploy = selectedFiles
+    .filter((file) => !publishedFiles.includes(file))
+    .map((file) => getRelativePath(file, BASE_URL)); // 상대 경로로 변환
 
-    // 회수할 파일 (이전에 배포되었지만 현재 선택되지 않은 파일)
-    const filesToUndeploy = publishedFiles.filter((path) => !selectedFiles.includes(path))
+  // 회수할 파일 (배포된 파일 중 선택되지 않은 파일)
+  const filesToUndeploy = publishedFiles
+    .filter((file) => !selectedFiles.includes(file))
+    .map((file) => getRelativePath(file, BASE_URL)); // 상대 경로로 변환
 
-    console.log("배포할 파일:", filesToDeploy)
-    console.log("회수할 파일:", filesToUndeploy)
+      // 배포 API 호출
+      if (filesToDeploy.length > 0) {
+        await publishFiles(filesToDeploy);
+        console.log("Published files:", filesToDeploy);
+      }
 
-    // 실제 배포 로직 구현 (API 호출 등)
-    // ...
+      // 회수 API 호출
+      if (filesToUndeploy.length > 0) {
+        await unpublishFiles(filesToUndeploy);
+        console.log("Unpublished files:", filesToUndeploy);
+      }
 
-    // 배포 상태 업데이트
-    setPublishedFiles(filesToDeploy)
+      // 배포 상태 업데이트
+      setPublishedFiles(selectedFiles);
 
-    // 모달 닫기
-    onClose()
-  }
+      // 모달 닫기
+      onClose();
+    } catch (error) {
+      console.error("Error during deployment:", error);
+    }
+  };
 
   // 파일 트리 렌더링 함수
   const renderFileTree = (node: Node, depth = 0) => {

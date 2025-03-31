@@ -115,3 +115,28 @@ export const deleteFileOrFolder = async (filePath: string): Promise<string> => {
   }
 };
 
+// 파일 배포 API
+export const publishFiles = async (filePaths: string[]): Promise<void> => {
+  try {
+    console.log("Publishing files:", filePaths); 
+    await apiClient.post("/publish", { filePaths }); // filePaths로 변경
+  } catch (error) {
+    console.error("Error publishing files:", error);
+    throw error;
+  }
+};
+
+
+
+// 파일 회수 API
+export const unpublishFiles = async (filePaths: string[]): Promise<void> => {
+  try {
+    await apiClient.delete("/unpublish", {
+      data: { filePaths }, // filePaths로 변경
+    });
+  } catch (error) {
+    console.error("Error unpublishing files:", error);
+    throw error;
+  }
+};
+
