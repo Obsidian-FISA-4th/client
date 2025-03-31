@@ -17,6 +17,8 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  
 
     // 다크 모드 변경 시 HTML 태그에 적용
     useEffect(() => {
@@ -30,7 +32,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
     fileContent,
     handleFileClick,
     handleTabClose,
-    handleContentChange,
+    handleUpdateFileContent,
     handleFileRename,
     handleDeleteFile,
     handleAddFile,
@@ -40,6 +42,12 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
+  };
+
+  const handleEditorChange = (newContent: string) => {
+    if (activeFilePath) {
+      handleUpdateFileContent(activeFilePath, newContent);
+    }
   };
 
   const getCurrentPath = () => {
@@ -79,7 +87,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
             ) : (
               <Editor
                 content={fileContent}
-                onChange={handleContentChange}
+                onChange={handleEditorChange}
                 filePath={activeFilePath}
                 onDelete={handleDeleteFile}
                 onRename={handleFileRename}

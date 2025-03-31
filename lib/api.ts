@@ -73,3 +73,45 @@ export const uploadImages = async (files: File[]): Promise<string[]> => {
     throw error;
   }
 };
+
+// 마크다운 저장 API
+export const saveMarkdown = async (filePath:string, fileName: string, content: string): Promise<string> => {
+  try {
+    const response = await apiClient.post('/save', {
+      filePath,
+      fileName, // fileName으로 수정
+      content,
+    });
+    return response.data.result; // 성공 메시지 반환
+  } catch (error) {
+    console.error("Error saving markdown:", error);
+    throw error;
+  }
+};
+
+// 파일 내용 읽기 API
+export const fetchFileContent = async (filePath: string): Promise<string> => {
+  try {
+    const response = await apiClient.get('/content', {
+      params: { path: filePath },
+    });
+    return response.data.result; // 파일 내용 반환
+  } catch (error) {
+    console.error("Error fetching file content:", error);
+    throw error;
+  }
+};
+
+// 파일 또는 폴더 삭제 API
+export const deleteFileOrFolder = async (filePath: string): Promise<string> => {
+  try {
+    const response = await apiClient.delete('/delete', {
+      params: { path: filePath },
+    });
+    return response.data.result; // 성공 메시지 반환
+  } catch (error) {
+    console.error("Error deleting file or folder:", error);
+    throw error;
+  }
+};
+
