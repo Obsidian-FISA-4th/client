@@ -36,6 +36,18 @@ export const transformApiResponse = (data: any[]): FileSystemNode[] => {
         }));
 };
 
+export const transformApiResponseForDeployModal = (data: any[]): FileSystemNode[] => {
+    return data
+        .filter((item) => item.name !== ".DS_Store" && item.name !== "images") // .DS_Store, images 폴더 파일 제외
+        .map((item) => ({
+            id: item.path,
+            name: item.name,
+            type: item.folder ? "folder" : "file",
+            path: item.path,
+            children: transformApiResponseForDeployModal(item.children || []), // 재귀적으로 children 처리
+        }));
+};
+
 export const getRelativePath = (fullPath: string, base: string): string => {
     return fullPath.startsWith(base) ? fullPath.substring(base.length) : fullPath;
 };

@@ -2,8 +2,8 @@ import { create } from "zustand";
 import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, saveMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
 import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
-const BASE_URL = process.env.BASE_URL || "";
-const HOME_DIR = process.env.HOME_DIR || "";
+const BASE_URL = process.env.BASE_URL || "/default/note/";
+const HOME_DIR = process.env.HOME_DIR || "/default/home/";
 
 interface FolderNode extends FileSystemNode {
   children: FileSystemNode[];
