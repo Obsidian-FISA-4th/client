@@ -1,268 +1,213 @@
-import { create } from 'zustand'
-import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder } from '@/lib/api'
-import { getRelativePath, moveNode} from '@/lib/fileSystemUtils'
+import { create } from "zustand";
+import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, saveMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
+import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
-
-const BASE_URL = process.env.BASE_URL;
-const HOME_DIR = process.env.HOME_DIR;
-
-/**
- * Zustand을 통한 파일 시스템 관리
- */
-export interface FileSystemNode {
-  id: string
-  name: string
-  type: 'file' | 'folder'
-  path: string
-  children: FileSystemNode[]
-}
+const BASE_URL = process.env.BASE_URL || "";
+const HOME_DIR = process.env.HOME_DIR || "";
 
 interface FolderNode extends FileSystemNode {
-  children: FileSystemNode[]
+  children: FileSystemNode[];
 }
 
 interface OpenFile {
-  path: string
-  content: string
-  active: boolean
+  path: string;
+  content: string;
+  active: boolean;
 }
 
 interface FileSystemState {
-  fileSystem: FolderNode | null
-  openFiles: OpenFile[]
-  activeFilePath: string | null
-  fileContent: string
-  setFileSystem: (fileSystem: FolderNode) => void
-  fetchFileSystem: () => Promise<void>
-  handleFileClick: (filePath: string) => void
-  handleContentChange: (newContent: string) => void
-  handleFileRename: (oldPath: string, newName: string) => void
-  handleDeleteFile: () => void
-  handleTabClose: (filePath: string) => void
-  handleAddFile: (folderPath: string, fileName: string) => Promise<void>
-  handleAddFolder: (parentPath: string, folderName: string) => Promise<void>
-  handleMoveNode: (nodePath: string, targetFolderPath: string) => Promise <void>
+  fileSystem: FolderNode | null;
+  openFiles: OpenFile[];
+  activeFilePath: string | null;
+  fileContent: string;
+  setFileSystem: (fileSystem: FolderNode) => void;
+  fetchFileSystem: () => Promise<void>;
+  handleFileClick: (filePath: string) => void;
+  handleUpdateFileContent: (filePath: string, newContent: string) => void;
+  handleFileRename: (oldPath: string, newName: string) => void;
+  handleDeleteFile: () => void;
+  handleTabClose: (filePath: string) => void;
+  handleAddFile: (folderPath: string, fileName: string) => Promise<void>;
+  handleAddFolder: (parentPath: string, folderName: string) => Promise<void>;
+  handleMoveNode: (nodePath: string, targetFolderPath: string) => Promise<void>;
 }
-
-const transformApiResponse = (data: any[]): FileSystemNode[] => {
-  return data
-    .filter(item => item.name !== '.DS_Store') // .DS_Store 파일 제외
-    .map(item => ({
-      id: item.path,
-      name: item.name,
-      type: item.folder ? 'folder' : 'file',
-      path: item.path,
-      children: transformApiResponse(item.children || [])
-    }))
-}
-
-// getFileContent 함수 추가 (파일 내용 가져오기)
-const getFileContent = (filePath: string, fileSystem: FolderNode | null): string | null => {
-  if (!fileSystem) return null;
-
-  const findFile = (node: FileSystemNode): FileSystemNode | null => {
-    if (node.path === filePath) return node;
-    if (node.type === 'folder' && node.children) {
-      for (const child of node.children) {
-        const result = findFile(child);
-        if (result) return result;
-      }
-    }
-    return null;
-  };
-
-  const fileNode = findFile(fileSystem);
-  return fileNode && fileNode.type === 'file' ? fileNode.name : null; 
-};
-
-// updateFileContent 함수 추가 (파일 내용 업데이트)
-const updateFileContent = (filePath: string, newContent: string, fileSystem: FolderNode | null): void => {
-  if (!fileSystem) return;
-
-  const findAndUpdateFile = (node: FileSystemNode): boolean => {
-    if (node.path === filePath && node.type === 'file') {
-      node.content = newContent; 
-      return true;
-    }
-    if (node.type === 'folder' && node.children) {
-      for (const child of node.children) {
-        if (findAndUpdateFile(child)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  findAndUpdateFile(fileSystem);
-};
-
-// renameFile 함수 추가 (파일 이름 변경)
-const renameFile = (oldPath: string, newName: string, fileSystem: FolderNode): string | null => {
-  const findAndRename = (node: FileSystemNode): boolean => {
-    if (node.path === oldPath) {
-      const pathParts = node.path.split('/');
-      pathParts[pathParts.length - 1] = newName; 
-      node.path = pathParts.join('/');
-      node.name = newName; 
-      return true;
-    }
-    if (node.type === 'folder' && node.children) {
-      for (const child of node.children) {
-        if (findAndRename(child)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  const success = findAndRename(fileSystem);
-  return success ? oldPath.replace(/[^/]+$/, newName) : null; 
-};
 
 export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   fileSystem: null,
   openFiles: [],
   activeFilePath: null,
   fileContent: "",
+
+  // 파일 시스템 상태 설정
   setFileSystem: (fileSystem) => set({ fileSystem }),
+
+  /***************** 초기 파일 내용 가져오기 start *************************/
   fetchFileSystem: async () => {
     try {
-      const result = await fetchFileSystemData()
-      const transformedData = transformApiResponse(result)
-      set({ fileSystem: { id: '/', name: 'root', type: 'folder', path: '/', children: transformedData } })
+      const result = await fetchFileSystemData();
+      const transformedData = transformApiResponse(result);
+      set({ fileSystem: { id: "/", name: "root", type: "folder", path: "/", children: transformedData } });
     } catch (error) {
-      console.error('Error fetching file system:', error)
+      console.error("Error fetching file system:", error);
     }
   },
-  handleFileClick: (filePath) => {
-    const { openFiles, fileSystem } = get()
-    const isFileOpen = openFiles.some((file) => file.path === filePath)
-    if (isFileOpen) {
-      // 파일이 열려 있는 경우 활성화
+  /*****************초기  파일 내용 가져오기 end *************************/
+
+  /*****************클릭 시 파일 내용 가져오기 start **********************/
+  handleFileClick: async (filePath) => {
+    const { openFiles } = get();
+    try {
+      const content = await fetchFileContent(filePath);
+      const updatedOpenFiles = openFiles.map((file) =>
+        file.path === filePath ? { ...file, active: true, content } : { ...file, active: false }
+      );
       set({
-        openFiles: openFiles.map((file) => ({ ...file, active: file.path === filePath })),
-        activeFilePath: filePath,
-        fileContent: openFiles.find((file) => file.path === filePath)?.content || "",
-      })
-    } else {
-      // 파일이 열려있지 않은 경우 새로 열기
-      const content = getFileContent(filePath, fileSystem) || `# ${filePath}\n\nStart writing here...`
-      set({
-        openFiles: [...openFiles.map((file) => ({ ...file, active: false })), { path: filePath, content, active: true }],
+        openFiles: updatedOpenFiles,
         activeFilePath: filePath,
         fileContent: content,
-      })
-    }
-  },
-  handleContentChange: (newContent) => {
-    const { activeFilePath, openFiles, fileSystem } = get();
-    if (activeFilePath && fileSystem) { // fileSystem이 null인지 확인
-      const newFileSystem: FolderNode = {
-        id: fileSystem.id, // 필수 속성 정의
-        name: fileSystem.name,
-        type: fileSystem.type,
-        path: fileSystem.path,
-        children: fileSystem.children || [], // children을 항상 정의
-      };
-      updateFileContent(activeFilePath, newContent, newFileSystem);
-      set({
-        fileContent: newContent,
-        openFiles: openFiles.map((file) =>
-          file.path === activeFilePath ? { ...file, content: newContent } : file
-        ),
-        fileSystem: newFileSystem,
       });
+    } catch (error) {
+      console.error(`Failed to fetch content for ${filePath}:`, error);
     }
   },
-  handleFileRename: (oldPath, newName) => {
-    const { fileSystem, openFiles, activeFilePath } = get();
-    if (!fileSystem) return; // fileSystem이 null인 경우 처리
-  
-    const newFileSystem: FolderNode = {
-      id: fileSystem.id || '', // 기본값 설정
-      name: fileSystem.name || '',
-      type: fileSystem.type || 'folder',
-      path: fileSystem.path || '',
-      children: fileSystem.children || [], // children을 항상 배열로 초기화
-    };
-  
-    const newPath = renameFile(oldPath, newName, newFileSystem);
-    if (newPath) {
-      set({
-        fileSystem: newFileSystem,
-        openFiles: openFiles.map((file) =>
-          file.path === oldPath ? { ...file, path: newPath } : file
-        ),
-        activeFilePath: activeFilePath === oldPath ? newPath : activeFilePath,
-      });
-    }
-  },
-  handleDeleteFile: () => {
-    const { activeFilePath, fileSystem, handleTabClose } = get()
-    if (activeFilePath) {
-      const newFileSystem = { ...fileSystem }
-      const success = deleteFile(activeFilePath, newFileSystem)
-      if (success) {
-        set({ fileSystem: newFileSystem })
-        handleTabClose(activeFilePath)
+  /***************** 클릭 시 파일 내용 가져오기 end *********************/
+
+
+  /***************** 파일 내용 업데이트 start *************************/
+  handleUpdateFileContent: async (filePath: string, newContent: string) => {
+    const { fileSystem, openFiles } = get();
+    if (!fileSystem) return;
+
+    const newFileSystem = { ...fileSystem };
+
+    // 파일 시스템에서 파일 내용 업데이트
+    const updateFileContent = (node: FileSystemNode): boolean => {
+      if (node.path === filePath) {
+        node.content = newContent;
+        return true;
       }
-    }
+      if (node.type === "folder" && node.children) {
+        return node.children.some(updateFileContent);
+      }
+      return false;
+    };
+
+    updateFileContent(newFileSystem);
+
+    // 이미지 업로드 처리
+    let updatedContent = newContent;
+    // if (localImages.length > 0) {
+    //   const uploadedImageUrls = await uploadImages(localImages);
+    //   const markdownImageTags = uploadedImageUrls.map((url) => `![](${url})`).join("\n");
+    //   updatedContent += `\n${markdownImageTags}`;
+    // }
+
+    // 백엔드 API 호출
+    const fileName = filePath.split("/").pop() || "";
+    await saveMarkdown(filePath, fileName, updatedContent);
+
+    // 상태 업데이트
+    set({
+      fileSystem: newFileSystem,
+      openFiles: openFiles.map((file) =>
+        file.path === filePath ? { ...file, content: updatedContent } : file
+      ),
+      fileContent: updatedContent,
+    });
   },
-  handleTabClose: (filePath) => {
-    const { openFiles, activeFilePath } = get()
-    const fileIndex = openFiles.findIndex((file) => file.path === filePath)
-    if (fileIndex !== -1) {
-      const newOpenFiles = [...openFiles]
-      newOpenFiles.splice(fileIndex, 1)
+
+  /***************** 파일 내용 업데이트 end *************************/
+
+  /***************** 파일 이름 변경 start *************************/
+  handleFileRename: async (oldPath, newName) => {
+    const { fileSystem } = get();
+    if (!fileSystem) return;
+
+    const newFileSystem = { ...fileSystem };
+    const newPath = renameNode(oldPath, newName, newFileSystem);
+
+    if (newPath) {
+      set({ fileSystem: newFileSystem });
+    }
+    await get().fetchFileSystem();
+  },
+  /***************** 파일 이름 변경 end *************************/
+
+
+  /* ***************파일 또는 폴더 삭제 start*************** */
+  handleDeleteFile: async () => {
+    const { activeFilePath, fileSystem, handleTabClose } = get();
+    if (!fileSystem || !activeFilePath) return;
+  
+    try {
+      // 백엔드 API 호출
+      await deleteFileOrFolder(activeFilePath);
+  
+      // 파일 시스템 상태 업데이트
+      const updatedFileSystem = await fetchFileSystemData(); // 최신 파일 시스템 데이터 가져오기
+      const transformedData = transformApiResponse(updatedFileSystem); // 데이터 변환
+  
       set({
-        openFiles: newOpenFiles,
-        activeFilePath: filePath === activeFilePath ? (newOpenFiles.length > 0 ? newOpenFiles[0].path : null) : activeFilePath,
-        fileContent: filePath === activeFilePath ? (newOpenFiles.length > 0 ? newOpenFiles[0].content : "") : get().fileContent,
-      })
+        fileSystem: { id: "/", name: "root", type: "folder", path: "/", children: transformedData },
+      });
+  
+      // 삭제된 파일의 탭 닫기
+      handleTabClose(activeFilePath);
+    } catch (error) {
+      console.error("Error deleting file or folder:", error);
     }
   },
+  /* ***************파일 또는 폴더 삭제 end*************** */
+
+
+
+  /* ***************새 파일 및 폴더 추가start*************** */
   handleAddFile: async (folderPath, fileName) => {
     try {
-      const relativePath = getRelativePath(folderPath, BASE_URL);
-      await createFileOrFolder(relativePath + '/' + fileName, 'file')
-      await get().fetchFileSystem()
+      const relativePath = getRelativePath(folderPath, BASE_URL) + "/" + fileName;
+      await createFileOrFolder(relativePath, "file");
+      await get().fetchFileSystem();
     } catch (error) {
-      console.error('Error adding file:', error)
+      console.error("Error adding file:", error);
     }
   },
+
   handleAddFolder: async (parentPath, folderName) => {
     try {
-      const relativePath = getRelativePath(parentPath, BASE_URL);
-      await createFileOrFolder(relativePath + '/' + folderName, 'folder')
-      await get().fetchFileSystem()
+      const relativePath = getRelativePath(parentPath, BASE_URL) + "/" + folderName;
+      await createFileOrFolder(relativePath, "folder");
+      await get().fetchFileSystem();
     } catch (error) {
-      console.error('Error adding folder:', error)
+      console.error("Error adding folder:", error);
     }
   },
 
+  /* ***************새 파일 및 폴더 추가 end*************** */
+
+  /* ***************새 파일 및 폴더 이동 start*************** */
   handleMoveNode: async (nodePath, targetFolderPath) => {
     try {
-      const relativeNodePath = getRelativePath(nodePath, HOME_DIR)
-      const relativeTargetFolderPath = getRelativePath(targetFolderPath, HOME_DIR)
-      await moveFileOrFolder(relativeNodePath, relativeTargetFolderPath)
-      const { fileSystem } = get()
-      const newFileSystem = { ...fileSystem }
-      const success = moveNode(relativeNodePath, relativeTargetFolderPath, newFileSystem)
-      if (success) {
-        set({ fileSystem: newFileSystem })
-      }
-      await get().fetchFileSystem()
+      const relativeNodePath = getRelativePath(nodePath, HOME_DIR);
+      const relativeTargetFolderPath = getRelativePath(targetFolderPath, HOME_DIR);
+      await moveFileOrFolder(relativeNodePath, relativeTargetFolderPath);
+      await get().fetchFileSystem();
     } catch (error) {
-      console.error('Error moving node:', error)
+      console.error("Error moving node:", error);
     }
   },
-}))
 
-// 상태 변경 시 JSON 형식으로 저장
-useFileSystemStore.subscribe((state) => {
-  const fileSystemJson = JSON.stringify(state.fileSystem, null, 2)
-  console.log('Updated File System:', fileSystemJson)
-  // TODO : fileSystemJson 파일 저장, 서버 전송 로직 작성 (추후)
-})
+  /* ***************새 파일 및 폴더 이동 end*************** */
+
+
+  /* ***************파일 탭 닫기 start******************* */
+  handleTabClose: (filePath) => {
+    const { openFiles, activeFilePath } = get();
+    const newOpenFiles = openFiles.filter((file) => file.path !== filePath);
+    set({
+      openFiles: newOpenFiles,
+      activeFilePath: filePath === activeFilePath ? (newOpenFiles[0]?.path || null) : activeFilePath,
+      fileContent: filePath === activeFilePath ? (newOpenFiles[0]?.content || "") : get().fileContent,
+    });
+  },
+}));
+/* ***************파일 탭 닫기 end********************* */

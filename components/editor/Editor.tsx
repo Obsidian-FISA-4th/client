@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import MDEditor from "@uiw/react-md-editor"
 import { IconButtons } from "../ui/IconButton"
 import { useDropzone } from "react-dropzone"
-import { uploadImages } from '@/lib/api'
+import { useFileSystemStore } from "@/store/fileSystemStore";
 
 
 interface EditorProps {
@@ -23,64 +23,65 @@ export function Editor({
   filePath,
   onDelete,
   onRename,
-  isStudent = false, 
+  isStudent = false,
   isDarkMode,
   toggleDarkMode,
 }: EditorProps) {
+  const {
+    handleFileRename, // 이름 수정: handleRenameFile -> handleFileRename
+    handleUpdateFileContent,
+    handleDeleteFile,
+  } = useFileSystemStore();
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
-  const [isEditMode, setIsEditMode] = useState(isStudent ? false : true); 
-  const [localImages, setLocalImages] = useState<File[]>([]); // 로컬에서 추가된 이미지 파일들
+  const [isEditMode, setIsEditMode] = useState(isStudent ? false : true);
+  const [localImages, setLocalImages] = useState<File[]>([]);
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
-    setEditableContent(content)
-    setEditableTitle(filePath ? filePath.split("/").pop() || "" : "")
-    setIsEditMode(!isStudent); 
-  }, [content, filePath, isStudent])
-
-  // 파일 수정 핸들러
-  const handleContentChange = (value: string | undefined) => {
-    if (value !== undefined) {
-      setEditableContent(value)
-      onChange(value)
-    }
-  }
+    setEditableContent(content || ""); // content가 undefined일 경우 빈 문자열로 초기화
+    setEditableTitle(filePath ? filePath.split("/").pop() || "" : "");
+    setIsEditMode(!isStudent);
+  }, [content, filePath, isStudent]);
 
   // 파일 수정 저장
   const handleSaveEdit = async () => {
-  
-    if (filePath && onRename && editableTitle !== filePath.split("/").pop()) {
-      onRename(filePath, editableTitle);
+    if (!filePath) return; // filePath가 undefined일 경우 처리
+
+    const fileName = filePath.split("/").pop() || ""; // 파일 이름 추출
+
+    // 파일 이름 변경
+    if (editableTitle !== fileName) {
+      handleFileRename(filePath, editableTitle);
     }
 
-    // 이미지 업로드
-    if (localImages.length > 0) {
-      const uploadedImageUrls = await uploadImages(localImages);
-      const markdownImageTags = uploadedImageUrls.map((url) => `![](${url})`).join("\n");
-      setEditableContent((prevContent) => prevContent + "\n" + markdownImageTags);
-      onChange(editableContent);
-      setLocalImages([]); // 업로드 후 로컬 이미지 초기화
-    }
+    // 파일 내용 업데이트 및 저장
+    await handleUpdateFileContent(filePath, editableContent);
 
+    // 로컬 이미지 초기화
+    setLocalImages([]);
     setIsEditMode(false);
   };
 
   // 파일 삭제
   const handleDelete = () => {
-    if (onDelete && window.confirm("Are you sure you want to delete this file?")) {
-      onDelete()
+    if (filePath && window.confirm("Are you sure you want to delete this file?")) {
+      handleDeleteFile(); // filePath는 store에서 처리
     }
-  }
+  };
 
   // 이미지 드래그 앤 드랍 처리
   const onDrop = (acceptedFiles: File[]) => {
-    setLocalImages((prev) => [...prev, ...acceptedFiles]); // 로컬 이미지 추가
-    const newImages = acceptedFiles.map(file => URL.createObjectURL(file))
-    const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
-    setEditableContent(editableContent + "\n" + markdownImageTags)
-    onChange(editableContent + "\n" + markdownImageTags)
-  }
+    const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
+    const markdownImageTags = newImages.map((url) => `![](${url})`).join("\n");
+    const updatedContent = editableContent + "\n" + markdownImageTags;
+
+    setLocalImages((prev) => [...prev, ...acceptedFiles]);
+    setEditableContent(updatedContent);
+    if (filePath) {
+      handleUpdateFileContent(filePath, updatedContent); // 파일 내용 업데이트
+    }
+  };
 
   // Dropzone 설정
   const { getRootProps, getInputProps } = useDropzone({
@@ -96,8 +97,11 @@ export function Editor({
       setLocalImages((prev) => [...prev, ...fileArray]); // 로컬 이미지 추가
       const newImages = Array.from(files).map(file => URL.createObjectURL(file))
       const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
-      setEditableContent(editableContent + "\n" + markdownImageTags)
-      onChange(editableContent + "\n" + markdownImageTags)
+      const updatedContent = editableContent + "\n" + markdownImageTags;
+      setEditableContent(updatedContent);
+      if (filePath) {
+        handleUpdateFileContent(filePath, updatedContent); // 파일 내용 업데이트
+      }
     }
   }
 
@@ -120,7 +124,7 @@ export function Editor({
               value={editableTitle}
               onChange={(e) => setEditableTitle(e.target.value)}
               className="px-2 py-1 bg-white dark:bg-[#333] border border-gray-300 dark:border-[#555] rounded text-gray-800 dark:text-[#dcddde] focus:outline-none focus:ring-1 focus:ring-blue-500"
-              disabled={isStudent} 
+              disabled={isStudent}
             />
           ) : (
             filePath.split("/").pop()
@@ -134,7 +138,7 @@ export function Editor({
             onSave={handleSaveEdit}
             onDelete={handleDelete}
             onUpload={handleUploadImage}
-            disabled={isStudent} 
+            disabled={isStudent}
           />
         )}
       </div>
@@ -148,7 +152,7 @@ export function Editor({
                 <input {...getInputProps()} />
                 <MDEditor
                   value={editableContent}
-                  onChange={handleContentChange}
+                  onChange={(value) => setEditableContent(value || "")}
                   height={800}
                   visiableDragbar={false}
                   data-color-mode={isDarkMode ? "dark" : "light"}
@@ -162,7 +166,7 @@ export function Editor({
                     onChange={handleFileSelect}
                     className="hidden"
                     multiple
-                    disabled={isStudent} 
+                    disabled={isStudent}
                   />
                 </div>
               </div>
@@ -176,7 +180,7 @@ export function Editor({
             <MDEditor.Markdown
               source={editableContent}
               className="prose dark:prose-invert text-black dark:text-white"
-              style={{ backgroundColor: "transparent"}}/>
+              style={{ backgroundColor: "transparent" }} />
           </div>
         </div>
       )}
