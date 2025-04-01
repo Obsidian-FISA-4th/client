@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 const API_KEY = process.env.API_KEY;
-const BASE_SRV_URL = process.env.BASE_SRV_URL;
+const BASE_URL = process.env.BASE_URL;
 
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
-  baseURL: BASE_SRV_URL + '/files',
+  baseURL: BASE_URL + '/files',
   headers: {
     'X-API-KEY': API_KEY, 
     'Content-Type': 'application/json',
@@ -111,6 +111,31 @@ export const deleteFileOrFolder = async (filePath: string): Promise<string> => {
     return response.data.result; // 성공 메시지 반환
   } catch (error) {
     console.error("Error deleting file or folder:", error);
+    throw error;
+  }
+};
+
+// 파일 배포 API
+export const publishFiles = async (filePaths: string[]): Promise<void> => {
+  try {
+    console.log("Publishing files:", filePaths); 
+    await apiClient.post("/publish", { filePaths }); // filePaths로 변경
+  } catch (error) {
+    console.error("Error publishing files:", error);
+    throw error;
+  }
+};
+
+
+
+// 파일 회수 API
+export const unpublishFiles = async (filePaths: string[]): Promise<void> => {
+  try {
+    await apiClient.delete("/unpublish", {
+      data: { filePaths }, // filePaths로 변경
+    });
+  } catch (error) {
+    console.error("Error unpublishing files:", error);
     throw error;
   }
 };

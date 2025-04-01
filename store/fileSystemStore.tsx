@@ -2,8 +2,7 @@ import { create } from "zustand";
 import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, saveMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
 import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
-const BASE_URL = process.env.BASE_URL || "";
-const HOME_DIR = process.env.HOME_DIR || "";
+const HOME_DIR = process.env.HOME_DIR || "/default/note/";
 
 interface FolderNode extends FileSystemNode {
   children: FileSystemNode[];
@@ -164,7 +163,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   /* ***************새 파일 및 폴더 추가start*************** */
   handleAddFile: async (folderPath, fileName) => {
     try {
-      const relativePath = getRelativePath(folderPath, BASE_URL) + "/" + fileName;
+      const relativePath = getRelativePath(folderPath, HOME_DIR) + "/" + fileName+ ".md";
       await createFileOrFolder(relativePath, "file");
       await get().fetchFileSystem();
     } catch (error) {
@@ -174,7 +173,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
   handleAddFolder: async (parentPath, folderName) => {
     try {
-      const relativePath = getRelativePath(parentPath, BASE_URL) + "/" + folderName;
+      const relativePath = getRelativePath(parentPath, HOME_DIR) + "/" + folderName;
       await createFileOrFolder(relativePath, "folder");
       await get().fetchFileSystem();
     } catch (error) {
