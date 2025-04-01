@@ -118,18 +118,55 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   /***************** 파일 내용 업데이트 end *************************/
 
   /***************** 파일 이름 변경 start *************************/
-  handleFileRename: async (oldPath, newName) => {
-    const { fileSystem } = get();
+  handleFileRename: async (filePath: string, newName: string) => {
+    const { fileSystem, openFiles } = get();
     if (!fileSystem) return;
-
+  
     const newFileSystem = { ...fileSystem };
-    const newPath = renameNode(oldPath, newName, newFileSystem);
 
-    if (newPath) {
-      set({ fileSystem: newFileSystem });
+   // 파일 시스템에서 파일 이름 변경
+   const renameNode = (node: FileSystemNode): boolean => {
+    if (node.path === filePath) {
+      node.name = newName;
+      node.path = `${filePath.substring(0, filePath.lastIndexOf("/"))}/${newName}`;
+      return true;
     }
+    if (node.type === "folder" && node.children) {
+      return node.children.some(renameNode);
+    }
+    return false;
+  };
+
+
+  renameNode(newFileSystem);
+
+  // 새 파일 경로 계산
+  const newFilePath = `${filePath.substring(0, filePath.lastIndexOf("/"))}/${newName}`;
+
+  // 백엔드 API 호출
+  const content = openFiles.find((file) => file.path === filePath)?.content || "";
+  try {
+    await saveMarkdown(filePath, newName, content);
+    // 열려 있는 파일 탭 업데이트
+    const updatedOpenFiles = openFiles.map((file) =>
+      file.path === filePath
+        ? { ...file, name: newName, path: newFilePath }
+        : file
+    );
+
+    // 상태 업데이트
+    set({
+      fileSystem: newFileSystem,
+      openFiles: updatedOpenFiles,
+      activeFilePath: newFilePath,
+    });
+
+    // 최신 파일 시스템 데이터 가져오기
     await get().fetchFileSystem();
-  },
+  } catch (error) {
+    console.error("Error renaming file:", error);
+  }
+},
   /***************** 파일 이름 변경 end *************************/
 
 
