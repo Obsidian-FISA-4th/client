@@ -6,7 +6,7 @@ import { fetchFileSystemData } from "@/lib/api";
 import { getRelativePath, transformApiResponseForDeployModal } from "@/lib/fileSystemUtils";
 import { publishFiles, unpublishFiles } from "@/lib/api";
 
-const BASE_URL = process.env.BASE_URL || "/default/note/";
+const HOME_DIR = process.env.HOME_DIR || "/default/note/";
 
 // 타입 정의
 interface FileNode {
@@ -173,12 +173,12 @@ export function DeployModal({ isOpen, onClose }: DeployModalProps) {
       // 배포할 파일 (선택된 파일 중 배포되지 않은 파일)
     const filesToDeploy = selectedFiles
     .filter((file) => !publishedFiles.includes(file))
-    .map((file) => getRelativePath(file, BASE_URL)); // 상대 경로로 변환
+    .map((file) => getRelativePath(file, HOME_DIR)); // 상대 경로로 변환
 
   // 회수할 파일 (배포된 파일 중 선택되지 않은 파일)
   const filesToUndeploy = publishedFiles
     .filter((file) => !selectedFiles.includes(file))
-    .map((file) => getRelativePath(file, BASE_URL)); // 상대 경로로 변환
+    .map((file) => getRelativePath(file, HOME_DIR)); // 상대 경로로 변환
 
       // 배포 API 호출
       if (filesToDeploy.length > 0) {

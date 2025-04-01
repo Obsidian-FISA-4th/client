@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 const API_KEY = process.env.API_KEY;
-const BASE_SRV_URL = process.env.BASE_SRV_URL;
+const BASE_URL = process.env.BASE_URL;
 
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
-  baseURL: BASE_SRV_URL + '/files',
+  baseURL: BASE_URL + '/files',
   headers: {
     'X-API-KEY': API_KEY, 
     'Content-Type': 'application/json',

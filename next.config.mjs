@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 let userConfig = undefined
 try {
   userConfig = await import('./v0-user-next.config')
@@ -9,8 +12,7 @@ try {
 const nextConfig = {
   env: {
     API_KEY: process.env.API_KEY,
-    BASE_SRV_URL: process.env.BASE_SRV_URL,
-    BASE_URL : process.env.BASE_URL,
+    BASE_URL: process.env.BASE_URL,
     HOME_DIR : process.env.HOME_DIR
   },
   eslint: {
@@ -40,12 +42,11 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*' // 백엔드 서버 주소
+        destination: `${process.env.BASE_URL}/:path*`,
       }
     ]
   }
 }
-
 
 mergeConfig(nextConfig, userConfig)
 
