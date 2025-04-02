@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FileText, FolderClosed, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react'
-import { useFileSystemStore, FileSystemNode } from '@/store/fileSystemStore'
+import { useFileSystemStore } from '@/store/fileSystemStore'
+import { FileSystemNode } from '@/lib/fileSystemUtils'
 
 interface DragItem {
   node: FileSystemNode
@@ -157,7 +158,7 @@ export function SidebarContent({
             <span className="text-sm">{node.name}</span>
           </div>
 
-          {expandedFolders[node.path] && <div>{node.children.map((child) => renderNode(child, depth + 1))}</div>}
+          {expandedFolders[node.path] && <div>{node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}</div>}
         </div>
       )
     }

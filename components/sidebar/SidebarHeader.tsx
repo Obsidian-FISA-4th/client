@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Sun, Moon, Send, Menu, ChevronRight } from 'lucide-react'
-import { DeployModal } from '../modals/DeployModal'
+import { DeployModal } from '../modals/deploy/DeployModal'
+
 
 interface SidebarHeaderProps {
   isDarkMode: boolean
