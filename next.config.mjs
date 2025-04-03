@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 let userConfig = undefined
 try {
   userConfig = await import('./v0-user-next.config')
@@ -7,6 +10,11 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    API_KEY: process.env.API_KEY,
+    BASE_URL: process.env.BASE_URL,
+    HOME_DIR : process.env.HOME_DIR
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -21,6 +29,23 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/student',
+        permanent: true,
+      },
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.BASE_URL}/:path*`,
+      }
+    ]
+  }
 }
 
 mergeConfig(nextConfig, userConfig)

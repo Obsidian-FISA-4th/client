@@ -6,10 +6,6 @@ export function SidebarFooter() {
 
   return (
     <div className="p-2 border-t border-gray-200 dark:border-[#333]">
-      <div className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm">
-        <Hash size={16} />
-        <span>Tags</span>
-      </div>
       <div className="relative">
         <div
           className="flex items-center gap-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-[#333] text-sm cursor-pointer"
