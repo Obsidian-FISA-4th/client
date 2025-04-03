@@ -111,6 +111,7 @@ export function SidebarContent({
     const paddingLeft = depth * 16
 
     if (node.type === "file") {
+      const displayName = node.name.replace(/\.md$/, ""); 
       return (
         <div
           key={node.id}
@@ -129,7 +130,7 @@ export function SidebarContent({
           style={{ paddingLeft: `${paddingLeft}px` }}
         >
           <FileText size={14} />
-          <span>{node.name}</span>
+          <span>{displayName}</span>
         </div>
       )
     } else {

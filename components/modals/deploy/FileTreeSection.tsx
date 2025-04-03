@@ -18,6 +18,7 @@ export const FileTreeSection = ({
 
     if (node.type === "file") {
       const isSelected = selectedFiles.includes(node.path);
+      const displayName = node.name.replace(/\.md$/, ""); 
 
       return (
         <div
@@ -35,7 +36,7 @@ export const FileTreeSection = ({
           </div>
           <div className="flex items-center ml-3">
             <FileText size={16} className="mr-2 text-gray-500 dark:text-[#999]" />
-            <span className="text-sm text-gray-800 dark:text-[#dcddde]">{node.name}</span>
+            <span className="text-sm text-gray-800 dark:text-[#dcddde]">{displayName}</span>
           </div>
         </div>
       );

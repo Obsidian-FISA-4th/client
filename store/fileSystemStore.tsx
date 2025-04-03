@@ -127,7 +127,6 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
    // 파일 시스템에서 파일 이름 변경
    const renameNode = (node: FileSystemNode): boolean => {
     if (node.path === filePath) {
-      node.name = newName;
       node.path = `${filePath.substring(0, filePath.lastIndexOf("/"))}/${newName}`;
       return true;
     }
@@ -200,7 +199,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   /* ***************새 파일 및 폴더 추가start*************** */
   handleAddFile: async (folderPath, fileName) => {
     try {
-      const relativePath = getRelativePath(folderPath, HOME_DIR) + "/" + fileName+ ".md";
+      const relativePath = getRelativePath(folderPath, HOME_DIR) + "/" + fileName;
       await createFileOrFolder(relativePath, "file");
       await get().fetchFileSystem();
     } catch (error) {
