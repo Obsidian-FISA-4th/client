@@ -18,7 +18,7 @@ export const PublishedFilesSection = ({
       {publishedFiles.map((filePath) => {
         const isSelected = selectedFiles.includes(filePath);
         const fileName = filePath.split("/").pop() || "";
-
+        const displayName = fileName.replace(/\.md$/, ""); 
         return (
           <div
             key={filePath}
@@ -34,7 +34,7 @@ export const PublishedFilesSection = ({
             </div>
             <div className="flex items-center ml-3">
               <FileText size={16} className="mr-2 text-gray-500 dark:text-[#999]" />
-              <span className="text-sm text-gray-800 dark:text-[#dcddde]">{fileName}</span>
+              <span className="text-sm text-gray-800 dark:text-[#dcddde]">{displayName}</span>
             </div>
           </div>
         );

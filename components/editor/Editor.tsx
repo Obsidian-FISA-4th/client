@@ -40,7 +40,7 @@ export function Editor({
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
     setEditableContent(content || ""); // content가 undefined일 경우 빈 문자열로 초기화
-    setEditableTitle(filePath ? filePath.split("/").pop() || "" : "");
+    setEditableTitle(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : ""); // .md 확장자 제거
     setIsEditMode(!isStudent);
   }, [content, filePath, isStudent]);
 
@@ -51,8 +51,8 @@ export function Editor({
     const fileName = filePath.split("/").pop() || ""; // 파일 이름 추출
 
     // 파일 이름 변경
-    if (editableTitle !== fileName) {
-      handleFileRename(filePath, editableTitle);
+    if (editableTitle !== fileName.replace(/\.md$/, "")) { // .md 확장자 제거 후 비교
+      handleFileRename(filePath, `${editableTitle}.md`); // 저장 시 .md 확장자 추가
     }
 
     // 파일 내용 업데이트 및 저장
