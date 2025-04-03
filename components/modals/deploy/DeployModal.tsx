@@ -70,16 +70,26 @@ export function DeployModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
 
       const filesToUndeploy = publishedFiles
         .filter((file) => !selectedFiles.includes(file))
-        .map((file) => getRelativePath(file, HOME_DIR));
-
-      if (filesToDeploy.length > 0) {
-        await publishFiles(filesToDeploy);
-      }
-
-      if (filesToUndeploy.length > 0) {
-        await unpublishFiles(filesToUndeploy);
-      }
-
+        .map((file) => getRelativePath(file, HOME_DIR))
+        .map((file) => file.replace(/\.md$/, ".html"));
+        
+        console.log("Files to deploy:", filesToDeploy);
+        console.log("Files to undeploy:", filesToUndeploy);
+    
+        if (filesToDeploy.length > 0) {
+          console.log("Calling publishFiles API with:", filesToDeploy);
+          await publishFiles(filesToDeploy);
+        } else {
+          console.log("No files to deploy.");
+        }
+    
+        if (filesToUndeploy.length > 0) {
+          console.log("Calling unpublishFiles API with:", filesToUndeploy);
+          await unpublishFiles(filesToUndeploy);
+        } else {
+          console.log("No files to undeploy.");
+        }
+    
       setPublishedFiles(selectedFiles);
       onClose();
     } catch (error) {
