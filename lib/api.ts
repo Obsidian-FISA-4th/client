@@ -105,8 +105,9 @@ export const fetchFileContent = async (filePath: string): Promise<string> => {
 // 파일 또는 폴더 삭제 API
 export const deleteFileOrFolder = async (filePath: string): Promise<string> => {
   try {
+    const relativePath = filePath.replace(process.env.HOME_DIR || "/default/note/", ""); // 상대 경로 추출
     const response = await apiClient.delete('/delete', {
-      params: { path: filePath },
+      params: { path: relativePath },
     });
     return response.data.result; // 성공 메시지 반환
   } catch (error) {
