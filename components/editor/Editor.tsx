@@ -61,7 +61,7 @@ export function Editor({
   // 파일 삭제
   const handleDelete = () => {
     if (filePath && window.confirm("Are you sure you want to delete this file?")) {
-      handleDeleteFile();
+      handleDeleteFile(filePath, "file"); // filePath와 추가 인자를 전달
     }
   };
 
