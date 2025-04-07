@@ -26,7 +26,7 @@ export function SidebarContent({
   const [selectedPath, setSelectedPath] = useState<string | null>(null) // 클릭된 항목 추적
   const fileSystem = useFileSystemStore((state) => state.fileSystem)
   const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
-  const handleDeleteFileOrFolder = useFileSystemStore((state) => state.handleDeleteFileOrFolder);
+  const handleDeleteFile = useFileSystemStore((state) => state.handleDeleteFile);
   const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export function SidebarContent({
 
   const handleDelete = async () => {
     if (selectedPath && window.confirm("Are you sure you want to delete this folder?")) {
-      await handleDeleteFileOrFolder(selectedPath, "folder");
+      await handleDeleteFile(selectedPath, "folder");
     }
   }
 

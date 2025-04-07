@@ -24,7 +24,7 @@ interface FileSystemState {
   handleFileClick: (filePath: string) => void;
   handleUpdateFileContent: (filePath: string, newContent: string) => void;
   handleFileRename: (oldPath: string, newName: string) => void;
-  handleDeleteFileOrFolder: (path: string, type: 'file' | 'folder') => Promise<void>;
+  handleDeleteFile: (path: string, type: 'file' | 'folder') => Promise<void>;
   handleTabClose: (filePath: string) => void;
   handleAddFile: (folderPath: string, fileName: string) => Promise<void>;
   handleAddFolder: (parentPath: string, folderName: string) => Promise<void>;
@@ -170,7 +170,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
 
   /* ***************파일 또는 폴더 삭제 start*************** */
-  handleDeleteFileOrFolder: async (path: string, type: 'file' | 'folder') => {
+  handleDeleteFile: async (path: string, type: 'file' | 'folder') => {
     const { fileSystem, handleTabClose } = get();
     if (!fileSystem || !path) return;
   
