@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { FileText, FolderClosed, FolderOpen, ChevronDown, ChevronRight } from 'lucide-react'
 import { useFileSystemStore } from '@/store/fileSystemStore'
 import { FileSystemNode } from '@/lib/fileSystemUtils'
+import { Menu, Item, useContextMenu } from "react-contexify";
+import "react-contexify/dist/ReactContexify.css";
 
 interface DragItem {
   node: FileSystemNode
@@ -24,6 +26,8 @@ export function SidebarContent({
   const [selectedPath, setSelectedPath] = useState<string | null>(null) // 클릭된 항목 추적
   const fileSystem = useFileSystemStore((state) => state.fileSystem)
   const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
+  const handleDeleteFile = useFileSystemStore((state) => state.handleDeleteFile);
+  const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
     fetchFileSystem()
@@ -107,6 +111,22 @@ export function SidebarContent({
     }
   }
 
+  const handleContextMenu = (e: React.MouseEvent, nodePath: string) => {
+    e.preventDefault();
+    setSelectedPath(nodePath);
+
+    show({
+      event: e.nativeEvent, // React.MouseEvent에서 nativeEvent를 전달
+      props: { path: nodePath },
+    });
+  };
+
+  const handleDelete = async () => {
+    if (selectedPath && window.confirm("Are you sure you want to delete this folder?")) {
+      await handleDeleteFile(selectedPath, "folder");
+    }
+  }
+
   const renderNode = (node: FileSystemNode, depth = 0) => {
     const paddingLeft = depth * 16
 
@@ -152,6 +172,7 @@ export function SidebarContent({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, node.path)}
             onDragEnd={handleDragEnd}
+            onContextMenu={(e) => handleContextMenu(e, node.path)}
             style={{ paddingLeft: `${paddingLeft}px` }}
           >
             {expandedFolders[node.path] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -174,6 +195,9 @@ export function SidebarContent({
       }}
     >
       {fileSystem && fileSystem.children.map((node: FileSystemNode) => renderNode(node))}
+      <Menu id="folder-context-menu">
+        <Item onClick={handleDelete}>삭제하기</Item>
+      </Menu>
     </div>
   )
 }

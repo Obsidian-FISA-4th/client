@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import MDEditor from "@uiw/react-md-editor"
-import { IconButtons } from "../ui/IconButton"
 import { useDropzone } from "react-dropzone"
 import { useFileSystemStore } from "@/store/fileSystemStore";
+import { EditorSubmenu } from "./EditorSubMenu"
 
 
 interface EditorProps {
@@ -16,7 +16,6 @@ interface EditorProps {
   toggleDarkMode: () => void
 
 }
-
 export function Editor({
   content,
   onChange,
@@ -28,37 +27,33 @@ export function Editor({
   toggleDarkMode,
 }: EditorProps) {
   const {
-    handleFileRename, // 이름 수정: handleRenameFile -> handleFileRename
+    handleFileRename,
     handleUpdateFileContent,
     handleDeleteFile,
   } = useFileSystemStore();
   const [editableContent, setEditableContent] = useState(content);
-  const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
+  const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : "");
   const [isEditMode, setIsEditMode] = useState(isStudent ? false : true);
   const [localImages, setLocalImages] = useState<File[]>([]);
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
-    setEditableContent(content || ""); // content가 undefined일 경우 빈 문자열로 초기화
-    setEditableTitle(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : ""); // .md 확장자 제거
+    setEditableContent(content || "");
+    setEditableTitle(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : "");
     setIsEditMode(!isStudent);
   }, [content, filePath, isStudent]);
 
   // 파일 수정 저장
   const handleSaveEdit = async () => {
-    if (!filePath) return; // filePath가 undefined일 경우 처리
+    if (!filePath) return;
 
-    const fileName = filePath.split("/").pop() || ""; // 파일 이름 추출
+    const fileName = filePath.split("/").pop() || "";
 
-    // 파일 이름 변경
-    if (editableTitle !== fileName.replace(/\.md$/, "")) { // .md 확장자 제거 후 비교
-      handleFileRename(filePath, `${editableTitle}.md`); // 저장 시 .md 확장자 추가
+    if (editableTitle !== fileName.replace(/\.md$/, "")) {
+      handleFileRename(filePath, `${editableTitle}.md`);
     }
 
-    // 파일 내용 업데이트 및 저장
     await handleUpdateFileContent(filePath, editableContent);
-
-    // 로컬 이미지 초기화
     setLocalImages([]);
     setIsEditMode(false);
   };
@@ -66,7 +61,7 @@ export function Editor({
   // 파일 삭제
   const handleDelete = () => {
     if (filePath && window.confirm("Are you sure you want to delete this file?")) {
-      handleDeleteFile(); // filePath는 store에서 처리
+      handleDeleteFile(filePath, "file"); // filePath와 추가 인자를 전달
     }
   };
 
@@ -79,7 +74,7 @@ export function Editor({
     setLocalImages((prev) => [...prev, ...acceptedFiles]);
     setEditableContent(updatedContent);
     if (filePath) {
-      handleUpdateFileContent(filePath, updatedContent); // 파일 내용 업데이트
+      handleUpdateFileContent(filePath, updatedContent);
     }
   };
 
@@ -87,103 +82,84 @@ export function Editor({
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     noClick: true,
-  })
+  });
 
   // 로컬 파일 선택 처리
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
+    const files = event.target.files;
     if (files) {
       const fileArray = Array.from(files);
-      setLocalImages((prev) => [...prev, ...fileArray]); // 로컬 이미지 추가
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file))
-      const markdownImageTags = newImages.map(url => `![](${url})`).join("\n")
+      setLocalImages((prev) => [...prev, ...fileArray]);
+      const newImages = Array.from(files).map((file) => URL.createObjectURL(file));
+      const markdownImageTags = newImages.map((url) => `![](${url})`).join("\n");
       const updatedContent = editableContent + "\n" + markdownImageTags;
       setEditableContent(updatedContent);
       if (filePath) {
-        handleUpdateFileContent(filePath, updatedContent); // 파일 내용 업데이트
+        handleUpdateFileContent(filePath, updatedContent);
       }
     }
-  }
+  };
 
   // 로컬 파일 업로드 버튼 처리
   const handleUploadImage = () => {
-    document.getElementById("fileInput")?.click()
-  }
+    document.getElementById("fileInput")?.click();
+  };
 
   if (!filePath) {
-    return null
+    return null;
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-[#1e1e1e] relative">
-      <div className="flex justify-between p-2 border-b border-gray-200 dark:border-[#333]">
-        <div className="text-sm text-gray-600 dark:text-[#999] flex items-center">
-          {isEditMode ? (
-            <input
-              type="text"
-              value={editableTitle}
-              onChange={(e) => setEditableTitle(e.target.value)}
-              className="px-2 py-1 bg-white dark:bg-[#333] border border-gray-300 dark:border-[#555] rounded text-gray-800 dark:text-[#dcddde] focus:outline-none focus:ring-1 focus:ring-blue-500"
-              disabled={isStudent}
-            />
-          ) : (
-            filePath.split("/").pop()
-          )}
-        </div>
-
-        {!isStudent && (
-          <IconButtons
-            isEditMode={isEditMode}
-            onEdit={() => setIsEditMode(true)}
-            onSave={handleSaveEdit}
-            onDelete={handleDelete}
-            onUpload={handleUploadImage}
-            disabled={isStudent}
-          />
-        )}
-      </div>
+    <div className="flex-1  bg-white dark:bg-[#1e1e1e] relative">
+      <EditorSubmenu
+        editableTitle={editableTitle}
+        setEditableTitle={setEditableTitle}
+        isEditMode={isEditMode}
+        setIsEditMode={setIsEditMode}
+        handleSaveEdit={handleSaveEdit}
+        handleDelete={handleDelete}
+        handleUploadImage={handleUploadImage}
+        isStudent={isStudent}
+        filePath={filePath}
+      />
 
       {/* 편집 모드 */}
       {isEditMode ? (
-        <div className="flex h-full overflow-auto">
-          <div className="w-full overflow-auto sidebar-content">
-            <div className="flex h-[calc(100vh-160px)]">
-              <div {...getRootProps()} className="w-full overflow-auto sidebar-content">
-                <input {...getInputProps()} />
-                <MDEditor
-                  value={editableContent}
-                  onChange={(value) => setEditableContent(value || "")}
-                  height={800}
-                  visiableDragbar={false}
-                  data-color-mode={isDarkMode ? "dark" : "light"}
-                />
-                {/* 로컬 파일 선택 버튼 */}
-                <div className="mt-4">
-                  <input
-                    id="fileInput"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    multiple
-                    disabled={isStudent}
-                  />
-                </div>
-              </div>
-            </div>
+        <div {...getRootProps()} className="w-full h-full overflow-auto">
+          <input {...getInputProps()} />
+          <MDEditor
+            value={editableContent}
+            onChange={(value) => setEditableContent(value || "")}
+            height={800}
+            visibleDragbar={false}
+            data-color-mode={isDarkMode ? "dark" : "light"}
+            className="custom-md-editor"
+          />
+          {/* 로컬 파일 선택 버튼 */}
+          <div className="mt-4">
+            <input
+              id="fileInput"
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+              multiple
+              disabled={isStudent}
+            />
           </div>
         </div>
       ) : (
         /* 보기 모드 */
-        <div className="p-4 overflow-auto h-[calc(100vh-160px)] sidebar-content">
+        <div className="p-4 overflow-auto h-[calc(100vh-160px)]">
           <div className="max-w-3xl mx-auto prose dark:prose-invert">
             <MDEditor.Markdown
               source={editableContent}
               className="prose dark:prose-invert text-black dark:text-white"
-              style={{ backgroundColor: "transparent" }} />
+              style={{ backgroundColor: "transparent" }}
+            />
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
