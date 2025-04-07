@@ -30,7 +30,7 @@ export function Editor({
   const {
     handleFileRename, // 이름 수정: handleRenameFile -> handleFileRename
     handleUpdateFileContent,
-    handleDeleteFile,
+    handleDeleteFileOrFolder,
   } = useFileSystemStore();
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop() || "" : "");
@@ -66,7 +66,7 @@ export function Editor({
   // 파일 삭제
   const handleDelete = () => {
     if (filePath && window.confirm("Are you sure you want to delete this file?")) {
-      handleDeleteFile(); // filePath는 store에서 처리
+      handleDeleteFileOrFolder(filePath, "file"); // filePath와 추가 인자를 전달
     }
   };
 

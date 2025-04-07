@@ -24,7 +24,7 @@ interface FileSystemState {
   handleFileClick: (filePath: string) => void;
   handleUpdateFileContent: (filePath: string, newContent: string) => void;
   handleFileRename: (oldPath: string, newName: string) => void;
-  handleDeleteFile: () => void;
+  handleDeleteFileOrFolder: (path: string, type: 'file' | 'folder') => Promise<void>;
   handleTabClose: (filePath: string) => void;
   handleAddFile: (folderPath: string, fileName: string) => Promise<void>;
   handleAddFolder: (parentPath: string, folderName: string) => Promise<void>;
@@ -170,13 +170,13 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
 
   /* ***************파일 또는 폴더 삭제 start*************** */
-  handleDeleteFile: async () => {
-    const { activeFilePath, fileSystem, handleTabClose } = get();
-    if (!fileSystem || !activeFilePath) return;
+  handleDeleteFileOrFolder: async (path: string, type: 'file' | 'folder') => {
+    const { fileSystem, handleTabClose } = get();
+    if (!fileSystem || !path) return;
   
     try {
       // 백엔드 API 호출
-      await deleteFileOrFolder(activeFilePath);
+      await deleteFileOrFolder(path);
   
       // 파일 시스템 상태 업데이트
       const updatedFileSystem = await fetchFileSystemData(); // 최신 파일 시스템 데이터 가져오기
@@ -186,10 +186,12 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
         fileSystem: { id: "/", name: "root", type: "folder", path: "/", children: transformedData },
       });
   
-      // 삭제된 파일의 탭 닫기
-      handleTabClose(activeFilePath);
+      // 파일 삭제 시 탭 닫기
+      if (type === 'file') {
+        handleTabClose(path);
+      }
     } catch (error) {
-      console.error("Error deleting file or folder:", error);
+      console.error(`Error deleting ${type}:`, error);
     }
   },
   /* ***************파일 또는 폴더 삭제 end*************** */
