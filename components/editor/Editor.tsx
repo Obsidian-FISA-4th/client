@@ -9,8 +9,7 @@ interface EditorProps {
   content: string
   onChange: (content: string) => void
   filePath?: string
-  onDelete?: () => void
-  onRename?: (oldPath: string, newName: string) => void;
+  onDelete?: (path: string, type: "file" | "folder") => Promise<void>;  onRename?: (oldPath: string, newName: string) => void;
   isStudent?: boolean;
   isDarkMode: boolean
   toggleDarkMode: () => void
