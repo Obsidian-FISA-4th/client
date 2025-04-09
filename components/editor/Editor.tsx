@@ -3,6 +3,8 @@ import MDEditor from "@uiw/react-md-editor"
 import { useDropzone } from "react-dropzone"
 import { useFileSystemStore } from "@/store/fileSystemStore";
 import { EditorSubmenu } from "./EditorSubMenu"
+import {useRef} from "react";
+import { uploadImages } from "@/lib/api"; 
 
 
 interface EditorProps {
@@ -34,7 +36,7 @@ export function Editor({
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : "");
   const [isEditMode, setIsEditMode] = useState(isStudent ? false : true);
-  const [localImages, setLocalImages] = useState<File[]>([]);
+  const editorRef = useRef<HTMLTextAreaElement | null>(null);
 
   // 파일이 변경될 때 콘텐츠/제목 업데이트
   useEffect(() => {
@@ -52,9 +54,7 @@ export function Editor({
     if (editableTitle !== fileName.replace(/\.md$/, "")) {
       handleFileRename(filePath, `${editableTitle}.md`);
     }
-
     await handleUpdateFileContent(filePath, editableContent);
-    setLocalImages([]);
     setIsEditMode(false);
   };
 
@@ -65,16 +65,34 @@ export function Editor({
     }
   };
 
-  // 이미지 드래그 앤 드랍 처리
-  const onDrop = (acceptedFiles: File[]) => {
-    const newImages = acceptedFiles.map((file) => URL.createObjectURL(file));
-    const markdownImageTags = newImages.map((url) => `![](${url})`).join("\n");
-    const updatedContent = editableContent + "\n" + markdownImageTags;
+    // 이미지 삽입 함수
+    const insertImageAtCursor = (imageMarkdown: string) => {
+      if (editorRef.current) {
+        const textarea = editorRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = editableContent.slice(0, start);
+        const after = editableContent.slice(end);
+        const newContent = `${before}${imageMarkdown}${after}`;
+        setEditableContent(newContent);
+        textarea.setSelectionRange(start + imageMarkdown.length, start + imageMarkdown.length);
+        textarea.focus();
+      } else {
+        setEditableContent((prev) => prev + imageMarkdown);
+      }
+    };
 
-    setLocalImages((prev) => [...prev, ...acceptedFiles]);
-    setEditableContent(updatedContent);
-    if (filePath) {
-      handleUpdateFileContent(filePath, updatedContent);
+
+  // 이미지 드래그 앤 드랍 처리
+  const onDrop = async (acceptedFiles: File[]) => {
+    try {
+      const uploadedImageUrls = await uploadImages(acceptedFiles); // API 호출
+      uploadedImageUrls.forEach((url) => {
+        const markdownImageTag = `![](${url})`;
+        insertImageAtCursor(markdownImageTag); // 커서 위치에 이미지 삽입
+      });
+    } catch (error) {
+      console.error("Error uploading images:", error);
     }
   };
 
@@ -84,21 +102,23 @@ export function Editor({
     noClick: true,
   });
 
-  // 로컬 파일 선택 처리
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
+
+ // 로컬 파일 선택 처리
+ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (files) {
+    try {
       const fileArray = Array.from(files);
-      setLocalImages((prev) => [...prev, ...fileArray]);
-      const newImages = Array.from(files).map((file) => URL.createObjectURL(file));
-      const markdownImageTags = newImages.map((url) => `![](${url})`).join("\n");
-      const updatedContent = editableContent + "\n" + markdownImageTags;
-      setEditableContent(updatedContent);
-      if (filePath) {
-        handleUpdateFileContent(filePath, updatedContent);
-      }
+      const uploadedImageUrls = await uploadImages(fileArray); // API 호출
+      uploadedImageUrls.forEach((url) => {
+        const markdownImageTag = `![](${url})`;
+        insertImageAtCursor(markdownImageTag); // 커서 위치에 이미지 삽입
+      });
+    } catch (error) {
+      console.error("Error uploading images:", error);
     }
-  };
+  }
+};
 
   // 로컬 파일 업로드 버튼 처리
   const handleUploadImage = () => {
