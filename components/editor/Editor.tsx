@@ -28,7 +28,6 @@ export function Editor({
   toggleDarkMode,
 }: EditorProps) {
   const {
-    handleFileRename,
     handleUpdateFileContent,
     handleDeleteFile,
   } = useFileSystemStore();
@@ -48,11 +47,6 @@ export function Editor({
   const handleSaveEdit = async () => {
     if (!filePath) return;
 
-    const fileName = filePath.split("/").pop() || "";
-
-    if (editableTitle !== fileName.replace(/\.md$/, "")) {
-      handleFileRename(filePath, `${editableTitle}.md`);
-    }
     await handleUpdateFileContent(filePath, editableContent);
     setIsEditMode(false);
   };

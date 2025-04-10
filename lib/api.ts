@@ -82,12 +82,11 @@ export const uploadImages = async (files: File[]): Promise<string[]> => {
   }
 };
 
-// 마크다운 저장 API
-export const saveMarkdown = async (filePath:string, fileName: string, content: string): Promise<string> => {
+// 마크다운 수정 API
+export const updateMarkdown = async (filePath:string, content: string): Promise<string> => {
   try {
-    const response = await apiClient.post('/save', {
+    const response = await apiClient.put('/update', {
       filePath,
-      fileName, // fileName으로 수정
       content,
     });
     return response.data.result; // 성공 메시지 반환
