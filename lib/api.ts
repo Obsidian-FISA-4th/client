@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const API_KEY = process.env.API_KEY;
 const BASE_URL = process.env.BASE_URL;
+const NG_URL = process.env.NG_URL; 
 
 
 // Axios 인스턴스 생성
@@ -67,7 +68,14 @@ export const uploadImages = async (files: File[]): Promise<string[]> => {
         "Content-Type": "multipart/form-data",
       },
     });
-    return response.data.result; // API에서 반환된 이미지 URL 배열
+      // Nginx URL 반환
+      const imageUrls = response.data.result.map((filePath: string) => {
+        const fileName = filePath.split('/').pop(); // 파일명만 추출
+        return `${NG_URL}/images/${fileName}`;
+      });
+
+
+    return imageUrls;
   } catch (error) {
     console.error("Error uploading images:", error);
     throw error;
