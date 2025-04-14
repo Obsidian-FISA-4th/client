@@ -14,6 +14,7 @@ const nextConfig = {
     API_KEY: process.env.API_KEY,
     BASE_URL: process.env.BASE_URL,
     NG_URL: process.env.NG_URL,
+    PUB_DIR: process.env.PUB_DIR,
     HOME_DIR : process.env.HOME_DIR
   },
   eslint: {

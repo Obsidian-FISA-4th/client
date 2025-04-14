@@ -79,6 +79,7 @@ export function Sidebar({
             fileSystem={fileSystem}
             onMoveNode={onMoveNode}
             setActivePath={setActivePath}
+            isStudentPage={isStudentPage}
           />
           {!isStudentPage && <SidebarFooter />}
         </>

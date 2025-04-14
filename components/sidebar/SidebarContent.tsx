@@ -13,12 +13,14 @@ interface SidebarContentProps {
   onFileClick: (filePath: string) => void
   onMoveNode?: (nodePath: string, targetFolderPath: string) => void
   setActivePath: (path: string | null) => void
+  isStudentPage: boolean
 }
 
 export function SidebarContent({
   onFileClick,
   onMoveNode,
   setActivePath,
+  isStudentPage,
 }: SidebarContentProps) {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
@@ -30,8 +32,8 @@ export function SidebarContent({
   const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
-    fetchFileSystem()
-  }, [fetchFileSystem])
+    fetchFileSystem(isStudentPage); // ← isStudentPage 전달
+  }, [fetchFileSystem, isStudentPage]);
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
@@ -127,8 +129,8 @@ export function SidebarContent({
     }
   }
 
-  const renderNode = (node: FileSystemNode, depth = 0) => {
-    const paddingLeft = depth * 16
+  const renderNode = (node: FileSystemNode, depth = 1) => {
+    const paddingLeft = depth * 10
 
     if (node.type === "file") {
       const displayName = node.name.replace(/\.md$/, ""); 
@@ -188,7 +190,7 @@ export function SidebarContent({
 
   return (
     <div
-      className="flex-1 overflow-y-auto sidebar-content"
+      className="flex-1 overflow-y-auto sidebar-content pt-2"
       onClick={() => {
         setActivePath('/')
         setSelectedPath(null) 
