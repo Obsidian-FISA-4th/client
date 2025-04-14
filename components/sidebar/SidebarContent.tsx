@@ -40,8 +40,7 @@ export function SidebarContent({
 
     function initializeExpandedState(node: FileSystemNode) {
       if (node.type === "folder") {
-        const depth = node.path.split("/").length
-        initialExpandedFolders[node.path] = depth <= 2
+        initialExpandedFolders[node.path] = true
         node.children.forEach(initializeExpandedState)
       }
     }
@@ -130,7 +129,7 @@ export function SidebarContent({
   }
 
   const renderNode = (node: FileSystemNode, depth = 1) => {
-    const paddingLeft = depth * 10
+    const paddingLeft = depth * 5
 
     if (node.type === "file") {
       const displayName = node.name.replace(/\.md$/, ""); 
@@ -149,7 +148,7 @@ export function SidebarContent({
           draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          style={{ paddingLeft: `${paddingLeft + 20}px` }}
         >
           <FileText size={14} />
           <span>{displayName}</span>
@@ -182,7 +181,11 @@ export function SidebarContent({
             <span className="text-sm">{node.name}</span>
           </div>
 
-          {expandedFolders[node.path] && <div>{node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}</div>}
+          {expandedFolders[node.path] && (
+            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "8px" }}>
+              {node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}
+            </div>
+          )}
         </div>
       )
     }
