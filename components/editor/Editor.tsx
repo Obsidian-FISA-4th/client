@@ -45,14 +45,22 @@ export function Editor({
   // 파일 수정 저장
   const handleSaveEdit = async () => {
     if (!filePath) return;
-
-    const fileName = filePath.split("/").pop() || "";
-
-    if (editableTitle !== fileName.replace(/\.md$/, "")) {
-      handleFileRename(filePath, `${editableTitle}.md`);
+  
+    const oldFileName = filePath.split("/").pop() || "";
+    const oldDir = filePath.split("/").slice(0, -1).join("/");
+    const newFileName = `${editableTitle}.md`;
+    const newPath = `${oldDir}/${newFileName}`;
+  
+    if (editableTitle !== oldFileName.replace(/\.md$/, "")) {
+      await handleFileRename(filePath, newFileName);
     }
-
-    await handleUpdateFileContent(filePath, editableContent);
+  
+    const targetPath = editableTitle !== oldFileName.replace(/\.md$/, "")
+      ? newPath
+      : filePath;
+  
+    await handleUpdateFileContent(targetPath, editableContent);
+  
     setLocalImages([]);
     setIsEditMode(false);
   };
@@ -128,6 +136,7 @@ export function Editor({
           <input {...getInputProps()} />
           <MDEditor
             value={editableContent}
+            
             onChange={(value) => setEditableContent(value || "")}
             height={800}
             visibleDragbar={false}
