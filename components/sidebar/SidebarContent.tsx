@@ -182,7 +182,7 @@ export function SidebarContent({
           </div>
 
           {expandedFolders[node.path] && (
-            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "8px" }}>
+            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "10px" }}>
               {node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}
             </div>
           )}
