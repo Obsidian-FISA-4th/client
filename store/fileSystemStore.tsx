@@ -1,4 +1,5 @@
 import { create } from "zustand";
+
 import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, updateMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
 import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
@@ -106,6 +107,55 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   },
 
   /***************** 파일 내용 업데이트 end *************************/
+
+
+  /***************** 파일 이름 변경 start *************************/
+  handleFileRename: async (oldPath: string, newName: string): Promise<void> => {
+    const { fileSystem, openFiles } = get();
+
+    if (!fileSystem) return;
+
+    try {
+      const relativePath = getRelativePath(oldPath, HOME_DIR);
+      await renameFile(relativePath, newName); 
+
+      // 파일 시스템에서 파일 이름 변경
+      const updateFileName = (node: FileSystemNode): boolean => {
+        if (node.path === oldPath) {
+          node.name = newName;
+          const oldFileName = oldPath.split("/").pop() || "";
+          node.path = oldPath.replace(oldFileName, newName);
+          return true;
+        }
+        if (node.type === "folder" && node.children) {
+          return node.children.some(updateFileName);
+        }
+        return false;
+      };
+
+      const updatedFileSystem = { ...fileSystem };
+      updateFileName(updatedFileSystem);
+
+      // 파일 탭에서 경로도 변경
+      const updatedOpenFiles = openFiles.map((file: OpenFile) =>
+        file.path === oldPath
+          ? { ...file, path: oldPath.replace(oldPath.split("/").pop() || "", newName) }
+          : file
+      );
+
+      // 백엔드 API 호출
+      const fileName = oldPath.split("/").pop() || "";
+      await renameFile (oldPath, fileName);
+
+      set({
+        fileSystem: updatedFileSystem,
+        openFiles: updatedOpenFiles,
+      });
+    } catch (error) {
+      console.error("Error renaming file:", error);
+    }
+  },
+  /***************** 파일 이름 변경 end *************************/
 
 
 

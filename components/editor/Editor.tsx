@@ -46,8 +46,22 @@ export function Editor({
   // 파일 수정 저장
   const handleSaveEdit = async () => {
     if (!filePath) return;
-
-    await handleUpdateFileContent(filePath, editableContent);
+  
+    const oldFileName = filePath.split("/").pop() || "";
+    const oldDir = filePath.split("/").slice(0, -1).join("/");
+    const newFileName = `${editableTitle}.md`;
+    const newPath = `${oldDir}/${newFileName}`;
+  
+    if (editableTitle !== oldFileName.replace(/\.md$/, "")) {
+      await handleFileRename(filePath, newFileName);
+    }
+  
+    const targetPath = editableTitle !== oldFileName.replace(/\.md$/, "")
+      ? newPath
+      : filePath;
+  
+    await handleUpdateFileContent(targetPath, editableContent);
+  
     setIsEditMode(false);
   };
 

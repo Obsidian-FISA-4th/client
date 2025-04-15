@@ -96,6 +96,19 @@ export const updateMarkdown = async (filePath:string, content: string): Promise<
   }
 };
 
+// 파일 이름 변경 API
+export const renameFile = async (path: string, newName: string): Promise<string> => {
+  try {
+    const response = await apiClient.put('/rename', null, {
+      params: { path, newName }, 
+    });
+    return response.data.result;
+  } catch (error) {
+    console.error("Error renaming file:", error);
+    throw error;
+  }
+};
+
 // 파일 내용 읽기 API
 export const fetchFileContent = async (filePath: string): Promise<string> => {
   try {
