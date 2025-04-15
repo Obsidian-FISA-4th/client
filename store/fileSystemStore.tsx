@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, saveMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
+import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, updateMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
 import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
 const HOME_DIR = process.env.HOME_DIR || "/default/note/";
@@ -23,7 +23,6 @@ interface FileSystemState {
   fetchFileSystem: () => Promise<void>;
   handleFileClick: (filePath: string) => void;
   handleUpdateFileContent: (filePath: string, newContent: string) => void;
-  handleFileRename: (oldPath: string, newName: string) => void;
   handleDeleteFile: (path: string, type: 'file' | 'folder') => Promise<void>;
   handleTabClose: (filePath: string) => void;
   handleAddFile: (folderPath: string, fileName: string) => Promise<void>;
@@ -93,80 +92,21 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
     updateFileContent(newFileSystem);
 
-    // 이미지 업로드 처리
-    let updatedContent = newContent;
-    // if (localImages.length > 0) {
-    //   const uploadedImageUrls = await uploadImages(localImages);
-    //   const markdownImageTags = uploadedImageUrls.map((url) => `![](${url})`).join("\n");
-    //   updatedContent += `\n${markdownImageTags}`;
-    // }
 
-    // 백엔드 API 호출
-    const fileName = filePath.split("/").pop() || "";
-    await saveMarkdown(filePath, fileName, updatedContent);
+    await updateMarkdown(filePath, newContent);
 
     // 상태 업데이트
     set({
       fileSystem: newFileSystem,
       openFiles: openFiles.map((file) =>
-        file.path === filePath ? { ...file, content: updatedContent } : file
+        file.path === filePath ? { ...file, content: newContent } : file
       ),
-      fileContent: updatedContent,
+      fileContent: newContent,
     });
   },
 
   /***************** 파일 내용 업데이트 end *************************/
 
-  /***************** 파일 이름 변경 start *************************/
-  handleFileRename: async (filePath: string, newName: string) => {
-    const { fileSystem, openFiles } = get();
-    if (!fileSystem) return;
-  
-    const newFileSystem = { ...fileSystem };
-
-   // 파일 시스템에서 파일 이름 변경
-   const renameNode = (node: FileSystemNode): boolean => {
-    if (node.path === filePath) {
-      node.path = `${filePath.substring(0, filePath.lastIndexOf("/"))}/${newName}`;
-      return true;
-    }
-    if (node.type === "folder" && node.children) {
-      return node.children.some(renameNode);
-    }
-    return false;
-  };
-
-
-  renameNode(newFileSystem);
-
-  // 새 파일 경로 계산
-  const newFilePath = `${filePath.substring(0, filePath.lastIndexOf("/"))}/${newName}`;
-
-  // 백엔드 API 호출
-  const content = openFiles.find((file) => file.path === filePath)?.content || "";
-  try {
-    await saveMarkdown(filePath, newName, content);
-    // 열려 있는 파일 탭 업데이트
-    const updatedOpenFiles = openFiles.map((file) =>
-      file.path === filePath
-        ? { ...file, name: newName, path: newFilePath }
-        : file
-    );
-
-    // 상태 업데이트
-    set({
-      fileSystem: newFileSystem,
-      openFiles: updatedOpenFiles,
-      activeFilePath: newFilePath,
-    });
-
-    // 최신 파일 시스템 데이터 가져오기
-    await get().fetchFileSystem();
-  } catch (error) {
-    console.error("Error renaming file:", error);
-  }
-},
-  /***************** 파일 이름 변경 end *************************/
 
 
   /* ***************파일 또는 폴더 삭제 start*************** */
