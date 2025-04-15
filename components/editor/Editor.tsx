@@ -19,10 +19,7 @@ interface EditorProps {
 
 export function Editor({
   content,
-  onChange,
   filePath,
-  onDelete,
-  onRename,
   isStudent = false,
   isDarkMode,
   isDeployModalOpen,
@@ -30,6 +27,7 @@ export function Editor({
   const {
     handleUpdateFileContent,
     handleDeleteFile,
+    handleFileRename,
   } = useFileSystemStore();
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : "");
@@ -53,7 +51,7 @@ export function Editor({
     const newPath = `${oldDir}/${newFileName}`;
   
     if (editableTitle !== oldFileName.replace(/\.md$/, "")) {
-      await handleFileRename(filePath, newFileName);
+      await  handleFileRename(filePath, newFileName);
     }
   
     const targetPath = editableTitle !== oldFileName.replace(/\.md$/, "")
