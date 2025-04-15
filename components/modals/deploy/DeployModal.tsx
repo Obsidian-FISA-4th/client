@@ -65,7 +65,6 @@ export function DeployModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   const handleDeploy = async () => {
     try {
       const filesToDeploy = selectedFiles
-        .filter((file) => !publishedFiles.includes(file))
         .map((file) => getRelativePath(file, HOME_DIR));
 
       const filesToUndeploy = publishedFiles
