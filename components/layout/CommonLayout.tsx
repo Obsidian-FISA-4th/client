@@ -17,6 +17,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
 
   // 다크 모드 변경 시 HTML 태그에 적용
   useEffect(() => {
@@ -126,6 +127,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
                 onRename={handleFileRename}
                 isDarkMode={isDarkMode}
                 toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                isDeployModalOpen={isDeployModalOpen}
               />
             )
           ) : (

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, updateMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder } from "@/lib/api";
+import { fetchFileSystemData, createFileOrFolder, moveFileOrFolder, updateMarkdown, fetchFileContent, uploadImages, deleteFileOrFolder, renameFile } from "@/lib/api";
 import { getRelativePath, transformApiResponse, FileSystemNode } from "@/lib/fileSystemUtils";
 
 const HOME_DIR = process.env.HOME_DIR || "/default/note/";
@@ -25,6 +25,7 @@ interface FileSystemState {
   handleFileClick: (filePath: string) => void;
   handleUpdateFileContent: (filePath: string, newContent: string) => void;
   handleDeleteFile: (path: string, type: 'file' | 'folder', isStudentPage?: boolean) => Promise<void>;
+  handleFileRename: (oldPath: string, newName: string) => Promise<void>;
   handleTabClose: (filePath: string) => void;
   handleAddFile: (folderPath: string, fileName: string, isStudentPage?: boolean) => Promise<void>;
   handleAddFolder: (parentPath: string, folderName: string, isStudentPage?: boolean) => Promise<void>;
