@@ -13,12 +13,25 @@ export const FileTreeSection = ({
   toggleFileSelection: (filePath: string) => void;
   toggleFolder: (folderPath: string) => void;
 }) => {
+  function getAllChildFilePaths(node: any): string[] {
+    if (node.type === "file") return [node.path];
+    if (node.type === "folder") {
+      return node.children.flatMap((child: any) => getAllChildFilePaths(child));
+    }
+    return [];
+  }
+
+  const isFolderSelected = (node: any) => {
+    const allPaths = getAllChildFilePaths(node);
+    return allPaths.length > 0 && allPaths.every((p) => selectedFiles.includes(p));
+  };
+
   const renderFileTree = (node: any, depth = 0) => {
     const paddingLeft = depth * 16;
 
     if (node.type === "file") {
       const isSelected = selectedFiles.includes(node.path);
-      const displayName = node.name.replace(/\.md$/, ""); 
+      const displayName = node.name.replace(/\.md$/, "");
 
       return (
         <div
@@ -42,20 +55,37 @@ export const FileTreeSection = ({
       );
     } else if (node.type === "folder") {
       const isExpanded = expandedFolders[node.path];
+      const folderSelected = isFolderSelected(node);
 
       return (
         <div key={node.id}>
           <div
-            className="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-[#333] cursor-pointer"
+            className="flex items-center p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-[#333]"
             style={{ paddingLeft: `${paddingLeft}px` }}
           >
-            <div className="flex items-center" onClick={() => toggleFolder(node.path)}>
+            <div
+              className={`w-5 h-5 rounded border ${
+                folderSelected ? "bg-blue-500 border-blue-500 flex items-center justify-center" : "border-gray-300 dark:border-[#555]"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                const allPaths = getAllChildFilePaths(node);
+                const shouldUnselect = folderSelected;
+                allPaths.forEach((path) => {
+                  if (shouldUnselect === selectedFiles.includes(path)) {
+                    toggleFileSelection(path);
+                  }
+                });
+              }}
+            >
+              {folderSelected && <Check size={14} className="text-white" />}
+            </div>
+            <div className="flex items-center ml-2 cursor-pointer" onClick={() => toggleFolder(node.path)}>
               {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
               {isExpanded ? <FolderOpen size={16} className="ml-1" /> : <FolderClosed size={16} className="ml-1" />}
             </div>
             <span className="ml-2 text-sm font-medium text-gray-800 dark:text-[#dcddde]">{node.name}</span>
           </div>
-
           {isExpanded && <div>{node.children.map((child: any) => renderFileTree(child, depth + 1))}</div>}
         </div>
       );
