@@ -13,12 +13,14 @@ interface SidebarContentProps {
   onFileClick: (filePath: string) => void
   onMoveNode?: (nodePath: string, targetFolderPath: string) => void
   setActivePath: (path: string | null) => void
+  isStudentPage: boolean
 }
 
 export function SidebarContent({
   onFileClick,
   onMoveNode,
   setActivePath,
+  isStudentPage,
 }: SidebarContentProps) {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
@@ -30,16 +32,15 @@ export function SidebarContent({
   const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
-    fetchFileSystem()
-  }, [fetchFileSystem])
+    fetchFileSystem(isStudentPage); // ← isStudentPage 전달
+  }, [fetchFileSystem, isStudentPage]);
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
 
     function initializeExpandedState(node: FileSystemNode) {
       if (node.type === "folder") {
-        const depth = node.path.split("/").length
-        initialExpandedFolders[node.path] = depth <= 2
+        initialExpandedFolders[node.path] = true
         node.children.forEach(initializeExpandedState)
       }
     }
@@ -127,8 +128,8 @@ export function SidebarContent({
     }
   }
 
-  const renderNode = (node: FileSystemNode, depth = 0) => {
-    const paddingLeft = depth * 16
+  const renderNode = (node: FileSystemNode, depth = 1) => {
+    const paddingLeft = depth * 5
 
     if (node.type === "file") {
       const displayName = node.name.replace(/\.md$/, ""); 
@@ -147,7 +148,7 @@ export function SidebarContent({
           draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          style={{ paddingLeft: `${paddingLeft + 20}px` }}
         >
           <FileText size={14} />
           <span>{displayName}</span>
@@ -180,7 +181,11 @@ export function SidebarContent({
             <span className="text-sm">{node.name}</span>
           </div>
 
-          {expandedFolders[node.path] && <div>{node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}</div>}
+          {expandedFolders[node.path] && (
+            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "10px" }}>
+              {node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}
+            </div>
+          )}
         </div>
       )
     }
@@ -188,7 +193,7 @@ export function SidebarContent({
 
   return (
     <div
-      className="flex-1 overflow-y-auto sidebar-content"
+      className="flex-1 overflow-y-auto sidebar-content pt-2"
       onClick={() => {
         setActivePath('/')
         setSelectedPath(null) 

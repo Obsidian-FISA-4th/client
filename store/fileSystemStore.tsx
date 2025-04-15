@@ -20,14 +20,14 @@ interface FileSystemState {
   activeFilePath: string | null;
   fileContent: string;
   setFileSystem: (fileSystem: FolderNode) => void;
-  fetchFileSystem: () => Promise<void>;
+  fetchFileSystem: (isStudentPage: boolean) => Promise<void>;
   handleFileClick: (filePath: string) => void;
   handleUpdateFileContent: (filePath: string, newContent: string) => void;
-  handleDeleteFile: (path: string, type: 'file' | 'folder') => Promise<void>;
+  handleDeleteFile: (path: string, type: 'file' | 'folder', isStudentPage?: boolean) => Promise<void>;
   handleTabClose: (filePath: string) => void;
-  handleAddFile: (folderPath: string, fileName: string) => Promise<void>;
-  handleAddFolder: (parentPath: string, folderName: string) => Promise<void>;
-  handleMoveNode: (nodePath: string, targetFolderPath: string) => Promise<void>;
+  handleAddFile: (folderPath: string, fileName: string, isStudentPage?: boolean) => Promise<void>;
+  handleAddFolder: (parentPath: string, folderName: string, isStudentPage?: boolean) => Promise<void>;
+  handleMoveNode: (nodePath: string, targetFolderPath: string, isStudentPage?: boolean) => Promise<void>;
 }
 
 export const useFileSystemStore = create<FileSystemState>((set, get) => ({
@@ -40,10 +40,10 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   setFileSystem: (fileSystem) => set({ fileSystem }),
 
   /***************** 초기 파일 내용 가져오기 start *************************/
-  fetchFileSystem: async () => {
+  fetchFileSystem: async (isStudentPage = false) => {
     try {
       const result = await fetchFileSystemData();
-      const transformedData = transformApiResponse(result);
+      const transformedData = transformApiResponse(result, isStudentPage);
       set({ fileSystem: { id: "/", name: "root", type: "folder", path: "/", children: transformedData } });
     } catch (error) {
       console.error("Error fetching file system:", error);
@@ -110,7 +110,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
 
   /* ***************파일 또는 폴더 삭제 start*************** */
-  handleDeleteFile: async (path: string, type: 'file' | 'folder') => {
+  handleDeleteFile: async (path: string, type: 'file' | 'folder', isStudentPage = false) => {
     const { fileSystem, handleTabClose } = get();
     if (!fileSystem || !path) return;
   
@@ -120,7 +120,7 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   
       // 파일 시스템 상태 업데이트
       const updatedFileSystem = await fetchFileSystemData(); // 최신 파일 시스템 데이터 가져오기
-      const transformedData = transformApiResponse(updatedFileSystem); // 데이터 변환
+      const transformedData = transformApiResponse(updatedFileSystem, isStudentPage); // 데이터 변환
   
       set({
         fileSystem: { id: "/", name: "root", type: "folder", path: "/", children: transformedData },
@@ -139,21 +139,21 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
 
 
   /* ***************새 파일 및 폴더 추가start*************** */
-  handleAddFile: async (folderPath, fileName) => {
+  handleAddFile: async (folderPath, fileName, isStudentPage = false) => {
     try {
       const relativePath = getRelativePath(folderPath, HOME_DIR) + "/" + fileName;
       await createFileOrFolder(relativePath, "file");
-      await get().fetchFileSystem();
+      await get().fetchFileSystem(isStudentPage);
     } catch (error) {
       console.error("Error adding file:", error);
     }
   },
 
-  handleAddFolder: async (parentPath, folderName) => {
+  handleAddFolder: async (parentPath, folderName, isStudentPage = false) => {
     try {
       const relativePath = getRelativePath(parentPath, HOME_DIR) + "/" + folderName;
       await createFileOrFolder(relativePath, "folder");
-      await get().fetchFileSystem();
+      await get().fetchFileSystem(isStudentPage);
     } catch (error) {
       console.error("Error adding folder:", error);
     }
@@ -162,12 +162,12 @@ export const useFileSystemStore = create<FileSystemState>((set, get) => ({
   /* ***************새 파일 및 폴더 추가 end*************** */
 
   /* ***************새 파일 및 폴더 이동 start*************** */
-  handleMoveNode: async (nodePath, targetFolderPath) => {
+  handleMoveNode: async (nodePath, targetFolderPath, isStudentPage = false) => {
     try {
       const relativeNodePath = getRelativePath(nodePath, HOME_DIR);
       const relativeTargetFolderPath = getRelativePath(targetFolderPath, HOME_DIR);
       await moveFileOrFolder(relativeNodePath, relativeTargetFolderPath);
-      await get().fetchFileSystem();
+      await get().fetchFileSystem(isStudentPage);
     } catch (error) {
       console.error("Error moving node:", error);
     }
