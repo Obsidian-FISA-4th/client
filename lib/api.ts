@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const API_KEY = process.env.API_KEY;
 const BASE_URL = process.env.BASE_URL;
+const NG_URL = process.env.NG_URL; 
 
 
 // Axios 인스턴스 생성
@@ -67,24 +68,43 @@ export const uploadImages = async (files: File[]): Promise<string[]> => {
         "Content-Type": "multipart/form-data",
       },
     });
-    return response.data.result; // API에서 반환된 이미지 URL 배열
+      // Nginx URL 반환
+      const imageUrls = response.data.result.map((filePath: string) => {
+        const fileName = filePath.split('/').pop(); // 파일명만 추출
+        return `${NG_URL}/images/${fileName}`;
+      });
+
+
+    return imageUrls;
   } catch (error) {
     console.error("Error uploading images:", error);
     throw error;
   }
 };
 
-// 마크다운 저장 API
-export const saveMarkdown = async (filePath:string, fileName: string, content: string): Promise<string> => {
+// 마크다운 수정 API
+export const updateMarkdown = async (filePath:string, content: string): Promise<string> => {
   try {
-    const response = await apiClient.post('/save', {
+    const response = await apiClient.put('/update', {
       filePath,
-      fileName, // fileName으로 수정
       content,
     });
     return response.data.result; // 성공 메시지 반환
   } catch (error) {
     console.error("Error saving markdown:", error);
+    throw error;
+  }
+};
+
+// 파일 이름 변경 API
+export const renameFile = async (path: string, newName: string): Promise<string> => {
+  try {
+    const response = await apiClient.put('/rename', null, {
+      params: { path, newName }, 
+    });
+    return response.data.result;
+  } catch (error) {
+    console.error("Error renaming file:", error);
     throw error;
   }
 };

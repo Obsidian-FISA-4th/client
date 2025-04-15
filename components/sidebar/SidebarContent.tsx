@@ -13,33 +13,53 @@ interface SidebarContentProps {
   onFileClick: (filePath: string) => void
   onMoveNode?: (nodePath: string, targetFolderPath: string) => void
   setActivePath: (path: string | null) => void
+  isStudentPage: boolean
+  fileSystem: FileSystemNode | null
+  searchTerm?: string; 
+}
+
+function highlightMatch(name: string, term: string) {
+  if (!term) return name;
+  const index = name.toLowerCase().indexOf(term.toLowerCase());
+  if (index === -1) return name;
+  const before = name.slice(0, index);
+  const match = name.slice(index, index + term.length);
+  const after = name.slice(index + term.length);
+  return (
+    <>
+      {before}
+      <span className="bg-yellow-200 text-black">{match}</span>
+      {after}
+    </>
+  );
 }
 
 export function SidebarContent({
   onFileClick,
   onMoveNode,
   setActivePath,
+  isStudentPage,
+  fileSystem,
+  searchTerm,
 }: SidebarContentProps) {
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [selectedPath, setSelectedPath] = useState<string | null>(null) // 클릭된 항목 추적
-  const fileSystem = useFileSystemStore((state) => state.fileSystem)
   const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
   const handleDeleteFile = useFileSystemStore((state) => state.handleDeleteFile);
   const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
-    fetchFileSystem()
-  }, [fetchFileSystem])
+    fetchFileSystem(isStudentPage); // ← isStudentPage 전달
+  }, [fetchFileSystem, isStudentPage]);
 
   useEffect(() => {
     const initialExpandedFolders: Record<string, boolean> = {}
 
     function initializeExpandedState(node: FileSystemNode) {
       if (node.type === "folder") {
-        const depth = node.path.split("/").length
-        initialExpandedFolders[node.path] = depth <= 2
+        initialExpandedFolders[node.path] = true
         node.children.forEach(initializeExpandedState)
       }
     }
@@ -49,6 +69,33 @@ export function SidebarContent({
       setExpandedFolders((prev) => ({ ...initialExpandedFolders, ...prev }))
     }
   }, [fileSystem])
+
+  useEffect(() => {
+    if (!searchTerm || !fileSystem) return;
+    const newExpandedFolders = { ...expandedFolders };
+    function expandIfMatch(node: FileSystemNode, parents: string[]): boolean {
+      let hasMatch = false;
+      if (node.type === "folder") {
+        for (const child of node.children) {
+          if (expandIfMatch(child, [...parents, node.path])) {
+            hasMatch = true;
+          }
+        }
+      } else if (node.type === "file") {
+        if (node.name.toLowerCase().includes((searchTerm ?? "").toLowerCase())) {
+          hasMatch = true;
+        }
+      }
+      if (hasMatch) {
+        parents.forEach((p) => {
+          newExpandedFolders[p] = true;
+        });
+      }
+      return hasMatch;
+    }
+    expandIfMatch(fileSystem, []);
+    setExpandedFolders((prev) => ({ ...prev, ...newExpandedFolders }));
+  }, [searchTerm, fileSystem]);
 
   const toggleFolder = (folderPath: string) => {
     setExpandedFolders((prev) => ({
@@ -127,11 +174,12 @@ export function SidebarContent({
     }
   }
 
-  const renderNode = (node: FileSystemNode, depth = 0) => {
-    const paddingLeft = depth * 16
+  const renderNode = (node: FileSystemNode, depth = 1) => {
+    const paddingLeft = depth * 5
 
     if (node.type === "file") {
-      const displayName = node.name.replace(/\.md$/, ""); 
+      const safeName = node.name.endsWith(".md") ? node.name.slice(0, -3) : node.name;
+      const displayName = highlightMatch(safeName, searchTerm || "");
       return (
         <div
           key={node.id}
@@ -147,7 +195,7 @@ export function SidebarContent({
           draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          style={{ paddingLeft: `${paddingLeft + 20}px` }}
         >
           <FileText size={14} />
           <span>{displayName}</span>
@@ -177,10 +225,16 @@ export function SidebarContent({
           >
             {expandedFolders[node.path] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             {expandedFolders[node.path] ? <FolderOpen size={16} /> : <FolderClosed size={16} />}
-            <span className="text-sm">{node.name}</span>
+            <span className="text-sm">
+              {highlightMatch(node.name, searchTerm || "")}
+            </span>
           </div>
 
-          {expandedFolders[node.path] && <div>{node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}</div>}
+          {expandedFolders[node.path] && (
+            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "10px" }}>
+              {node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}
+            </div>
+          )}
         </div>
       )
     }
@@ -188,7 +242,7 @@ export function SidebarContent({
 
   return (
     <div
-      className="flex-1 overflow-y-auto sidebar-content"
+      className="flex-1 overflow-y-auto sidebar-content pt-2"
       onClick={() => {
         setActivePath('/')
         setSelectedPath(null) 

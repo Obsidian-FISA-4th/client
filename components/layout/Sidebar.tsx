@@ -41,6 +41,7 @@ export function Sidebar({
   const [newItemName, setNewItemName] = useState('')
   const [newItemParentPath, setNewItemParentPath] = useState<string | null>(null)
   const [activePath, setActivePath] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleAddItem = (type: 'file' | 'folder') => {
     setNewItemType(type)
@@ -72,13 +73,20 @@ export function Sidebar({
       />
       {isOpen && (
         <>
-          <SidebarSearch onSearchChange={onSearchChange} />
+          <SidebarSearch
+            onSearchChange={(term) => {
+              setSearchTerm(term);
+              onSearchChange(term);
+            }}
+          />
           {onAddFile && onAddFolder && <SidebarSubMenu onAddItem={handleAddItem} />}
           <SidebarContent
             onFileClick={onFileClick}
             fileSystem={fileSystem}
             onMoveNode={onMoveNode}
             setActivePath={setActivePath}
+            isStudentPage={isStudentPage}
+            searchTerm={searchTerm}
           />
           {!isStudentPage && <SidebarFooter />}
         </>
