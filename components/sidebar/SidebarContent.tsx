@@ -15,7 +15,7 @@ interface SidebarContentProps {
   setActivePath: (path: string | null) => void
   isStudentPage: boolean
   fileSystem: FileSystemNode | null
-  searchTerm?: string; 
+  searchTerm?: string;
 }
 
 function highlightMatch(name: string, term: string) {
@@ -175,44 +175,80 @@ export function SidebarContent({
   }
 
   const renderNode = (node: FileSystemNode, depth = 1) => {
-    const paddingLeft = depth * 5
-
+    const paddingLeft = depth * 5;
+  
     if (node.type === "file") {
       const safeName = node.name.endsWith(".md") ? node.name.slice(0, -3) : node.name;
       const displayName = highlightMatch(safeName, searchTerm || "");
       return (
         <div
           key={node.id}
-          className={`flex items-center gap-1 p-1 rounded text-sm cursor-pointer ${
+          className={`flex items-center gap-2 p-1 rounded text-sm cursor-pointer ${
             selectedPath === node.path ? "bg-gray-300 dark:bg-gray-700" : "hover:bg-gray-200 dark:hover:bg-[#333]"
           }`}
           onClick={(e) => {
-            e.stopPropagation()
-            onFileClick(node.path)
-            setActivePath(node.path)
-            setSelectedPath(node.path) // 클릭된 항목 설정
+            e.stopPropagation();
+            onFileClick(node.path);
+            setActivePath(node.path);
+            setSelectedPath(node.path);
           }}
           draggable={!!onMoveNode}
           onDragStart={(e) => handleDragStart(e, node)}
           onDragEnd={handleDragEnd}
-          style={{ paddingLeft: `${paddingLeft + 20}px` }}
+          style={{
+            paddingLeft: `${paddingLeft}px`,
+            borderLeft: `1px solid ${
+              selectedPath === node.path ? "#8a5cf4" : "#ccc"
+            }`, // 클릭 시 색상 변경
+            marginLeft: "15px",
+            borderRadius: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderLeft = "1px solid #666"; // 파일 마우스 오버 시 border 색 변경
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderLeft = `1px solid ${
+              selectedPath === node.path ? "#8a5cf4" : "#ccc"
+            }`; // 마우스 아웃 시 원래대로
+          }}
         >
-          <FileText size={14} />
-          <span>{displayName}</span>
+          {/* 아이콘 */}
+          <div
+            style={{
+              flexShrink: 0,
+              width: "16px",
+              height: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FileText size={14} />
+          </div>
+          <span
+            className="break-words"
+            style={{
+              wordWrap: "break-word",
+              whiteSpace: "normal",
+              color: selectedPath === node.path ? "#8a5cf4" : "inherit", // 클릭 시 색상 변경
+            }}
+          >
+            {displayName}
+          </span>
         </div>
-      )
+      );
     } else {
       return (
         <div key={node.id}>
           <div
-            className={`flex items-center gap-1 p-1 rounded cursor-pointer ${
-              selectedPath === node.path ? "bg-gray-300 dark:bg-gray-700" : "hover:bg-gray-200 dark:hover:bg-[#333]"
+            className={`flex items-center gap-2 p-1 rounded cursor-pointer ${
+              selectedPath === node.path ? "bg-gray-300 dark:bg-gray-700" : ""
             } ${dropTarget === node.path ? "bg-blue-100 dark:bg-blue-900" : ""}`}
             onClick={(e) => {
-              e.stopPropagation()
-              toggleFolder(node.path)
-              setActivePath(node.path)
-              setSelectedPath(node.path) // 클릭된 항목 설정
+              e.stopPropagation();
+              toggleFolder(node.path);
+              setActivePath(node.path);
+              setSelectedPath(node.path);
             }}
             draggable={!!onMoveNode}
             onDragStart={(e) => handleDragStart(e, node)}
@@ -221,31 +257,56 @@ export function SidebarContent({
             onDrop={(e) => handleDrop(e, node.path)}
             onDragEnd={handleDragEnd}
             onContextMenu={(e) => handleContextMenu(e, node.path)}
-            style={{ paddingLeft: `${paddingLeft}px` }}
+            style={{
+              paddingLeft: `${paddingLeft}px`,
+              fontWeight: "normal", // 기본 폰트 굵기
+              ...(dropTarget === node.path && { fontWeight: "bold" }), // 드래그 시 굵게
+            }}
+            onMouseEnter={(e) => {
+              if (node.type === "folder") {
+                e.currentTarget.style.fontWeight = "bold"; // 폴더일 때 마우스 오버 시 굵게
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (node.type === "folder") {
+                e.currentTarget.style.fontWeight = "normal"; // 폴더일 때 마우스 아웃 시 원래대로
+              }
+            }}
           >
-            {expandedFolders[node.path] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            {expandedFolders[node.path] ? <FolderOpen size={16} /> : <FolderClosed size={16} />}
-            <span className="text-sm">
+            {expandedFolders[node.path] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {expandedFolders[node.path] ? <FolderOpen size={14} /> : <FolderClosed size={14} />}
+            <span
+              className="text-sm"
+              style={{
+                fontWeight: 500,
+                fontSize: "0.9rem",
+              }}
+            >
               {highlightMatch(node.name, searchTerm || "")}
             </span>
           </div>
-
+  
           {expandedFolders[node.path] && (
-            <div style={{ borderLeft: "1px solid #ccc", marginLeft: "10px" }}>
+            <div
+              style={{
+                borderLeft: depth >= 2 ? "1px solid #ccc" : "none",
+                marginLeft: "15px",
+              }}
+            >
               {node.children.map((child: FileSystemNode) => renderNode(child, depth + 1))}
             </div>
           )}
         </div>
-      )
+      );
     }
-  }
+  };
 
   return (
     <div
-      className="flex-1 overflow-y-auto sidebar-content pt-2"
+      className="flex-1 overflow-y-auto sidebar-content pt-2 pb-4"
       onClick={() => {
         setActivePath('/')
-        setSelectedPath(null) 
+        setSelectedPath(null)
       }}
     >
       {fileSystem && fileSystem.children.map((node: FileSystemNode) => renderNode(node))}
