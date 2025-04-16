@@ -28,6 +28,8 @@ export function Editor({
     handleUpdateFileContent,
     handleDeleteFile,
     handleFileRename,
+    handleFileClick,
+    fileContent,
   } = useFileSystemStore();
   const [editableContent, setEditableContent] = useState(content);
   const [editableTitle, setEditableTitle] = useState(filePath ? filePath.split("/").pop()?.replace(/\.md$/, "") || "" : "");
@@ -41,25 +43,33 @@ export function Editor({
     setIsEditMode(!isStudent);
   }, [content, filePath, isStudent]);
 
+  useEffect(() => {
+    // filePath가 있을 때마다 파일 내용을 fetch
+    if (filePath) {
+      handleFileClick(filePath);
+    }
+  }, [filePath, handleFileClick]);
+
+
   // 파일 수정 저장
   const handleSaveEdit = async () => {
     if (!filePath) return;
-  
+
     const oldFileName = filePath.split("/").pop() || "";
     const oldDir = filePath.split("/").slice(0, -1).join("/");
     const newFileName = `${editableTitle}.md`;
     const newPath = `${oldDir}/${newFileName}`;
-  
+
     if (editableTitle !== oldFileName.replace(/\.md$/, "")) {
-      await  handleFileRename(filePath, newFileName);
+      await handleFileRename(filePath, newFileName);
     }
-  
+
     const targetPath = editableTitle !== oldFileName.replace(/\.md$/, "")
       ? newPath
       : filePath;
-  
+
     await handleUpdateFileContent(targetPath, editableContent);
-  
+
     setIsEditMode(false);
   };
 
@@ -196,10 +206,16 @@ export function Editor({
           // 읽기 전용 모드
           <div className="flex flex-col h-full">
             <div className="p-4 flex-1 min-h-0 overflow-y-auto">
-              <div className="max-w-3xl mx-auto prose dark:prose-invert">
+              <div
+                className="
+        max-w-3xl mx-auto
+        prose dark:prose-invert
+        prose-headings:text-black prose-p:text-black prose-li:text-black prose-a:text-black 
+        dark:prose-headings:text-white dark:prose-p:text-white dark:prose-li:text-white dark:prose-a:text-white
+      "
+              >
                 <MDEditor.Markdown
-                  source={editableContent}
-                  className="prose dark:prose-invert text-black dark:text-white"
+                  source={fileContent}
                   style={{ backgroundColor: "transparent" }}
                 />
               </div>
