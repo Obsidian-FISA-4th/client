@@ -144,13 +144,13 @@ export function Editor({
 
   return (
     <div
-      className={`flex-1 w-full placeholder:flex flex-col bg-white dark:bg-[#1e1e1e] ${!isEditMode ? "overflow-auto" : ""
+      className={`flex-1 w-full placeholder:flex flex-col bg-white dark:bg-[#0d1116] ${!isEditMode ? "overflow-auto" : ""
         }`}
     >
       <div
         className={`flex-none flex  justify-between p-2 border-b border-gray-200 dark:border-[#333]  ${isDeployModalOpen
           ? "pointer-events-none opacity-50 bg-gray-200 dark:bg-gray-800"
-          : "bg-white dark:bg-[#1e1e1e]"
+          : "bg-white dark:bg-[#0d1116]"
           } z-0`}
       >
         <div className="text-sm text-gray-600 dark:text-[#999] flex items-center">
@@ -208,16 +208,16 @@ export function Editor({
             <div className="p-4 flex-1 min-h-0 overflow-y-auto">
               <div
                 className="
-        max-w-3xl mx-auto
-        prose dark:prose-invert
-        prose-headings:text-black prose-p:text-black prose-li:text-black prose-a:text-black 
-        dark:prose-headings:text-white dark:prose-p:text-white dark:prose-li:text-white dark:prose-a:text-white
-      "
+                max-w-3xl mx-auto
+                prose dark:prose-invert
+                prose-headings:text-black prose-p:text-black prose-li:text-black prose-a:text-black 
+                dark:prose-headings:text-white dark:prose-p:text-white dark:prose-li:text-white dark:prose-a:text-white
+              "
               >
                 <MDEditor.Markdown
                   source={fileContent}
-                  style={{ backgroundColor: "transparent" }}
-                />
+                  className="prose dark:prose-invert"
+                  wrapperElement={{ 'data-color-mode': isDarkMode ? 'dark' : 'light' }}                />
               </div>
             </div>
           </div>
