@@ -7,6 +7,7 @@ import { WelcomeScreen } from "@/components/welcome/WelcomeScreen";
 import { Editor } from "@/components/editor/Editor";
 import { useFileSystemStore } from "@/store/fileSystemStore";
 import { useState, useEffect } from "react";
+import MDEditor from "@uiw/react-md-editor";
 
 interface CommonLayoutProps {
   isStudent: boolean;
@@ -70,26 +71,12 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
     const relativePath = activeFilePath.startsWith(homeDir)
       ? activeFilePath.substring(homeDir.length)
       : activeFilePath;
-    
+
     const parts = relativePath.split("/");
     parts.pop();
     return parts.join("/");
   };
 
-  // HTML 파일 경로 생성
-  const getHtmlFilePath = () => {
-    if (!activeFilePath) return null;
-
-    // .env 파일에서 HOME_DIR 값을 가져옴
-    const homeDir = process.env.HOME_DIR || "/default/note/";
-    const nginxUrl = process.env.NG_URL;
-
-    const relativePath = activeFilePath.slice(homeDir.length).replace(/\.md$/, "");
-    console.log("relativePath", relativePath);
-
-    // "/pages/" 경로로 반환
-    return `${nginxUrl}/pages/${relativePath}`;
-  };
 
   return (
     <div className={`flex h-screen w-full ${isDarkMode ? "dark" : ""}`}>
@@ -101,7 +88,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
           toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
           onFileClick={handleFileClick}
           fileSystem={fileSystem}
-          onDeployClick={isStudentPage ? undefined : () => {}}
+          onDeployClick={isStudentPage ? undefined : () => { }}
           onSearchChange={handleSearchChange}
           onAddFile={isStudent ? undefined : handleAddFile}
           onAddFolder={isStudent ? undefined : handleAddFolder}
@@ -113,11 +100,23 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
           <Tabs openFiles={openFiles} onTabClick={handleFileClick} onTabClose={handleTabClose} />
           {activeFilePath ? (
             isStudentPage ? (
-              <iframe
-                src={getHtmlFilePath() || ""}
-                className="flex-1 h-full w-full"
-                title="Markdown Preview"
-              />
+              <div className="flex flex-col h-full">
+                <div className="p-4 flex-1 min-h-0 overflow-y-auto">
+                  <div
+                    className="
+        max-w-3xl mx-auto
+        prose dark:prose-invert
+        prose-headings:text-black prose-p:text-black prose-li:text-black prose-a:text-black 
+        dark:prose-headings:text-white dark:prose-p:text-white dark:prose-li:text-white dark:prose-a:text-white
+      "
+                  >
+                    <MDEditor.Markdown
+                      source={fileContent}
+                      style={{ backgroundColor: "transparent" }}
+                    />
+                  </div>
+                </div>
+              </div>
             ) : (
               <Editor
                 content={fileContent}
