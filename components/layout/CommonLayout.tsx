@@ -80,7 +80,7 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
 
   return (
     <div className={`flex h-screen w-full ${isDarkMode ? "dark" : ""}`}>
-      <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] text-gray-800 dark:text-[#dcddde]">
+      <div className="flex h-full w-full bg-white dark:bg-[#0d1116] text-gray-800 dark:text-[#dcddde]">
         <Sidebar
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
@@ -112,7 +112,8 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
                   >
                     <MDEditor.Markdown
                       source={fileContent}
-                      style={{ backgroundColor: "transparent" }}
+                      className="prose dark:prose-invert"
+                      wrapperElement={{ 'data-color-mode': isDarkMode ? 'dark' : 'light' }}               
                     />
                   </div>
                 </div>

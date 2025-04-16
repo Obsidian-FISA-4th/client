@@ -1,6 +1,6 @@
 export function WelcomeScreen() {
   return (
-    <div className="flex-1 overflow-auto bg-white dark:bg-[#1e1e1e] flex flex-col items-center justify-center p-8">
+    <div className="flex-1 overflow-auto bg-white dark:bg-[#0d1116] flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl text-center">
         <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-[#dcddde]">Welcome to Your Knowledge Vault</h1>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { SidebarHeader } from '../sidebar/SidebarHeader'
 import { SidebarSearch } from '../sidebar/SidebarSearch'
 import { SidebarFooter } from '../sidebar/SidebarFooter'
@@ -42,6 +42,7 @@ export function Sidebar({
   const [newItemParentPath, setNewItemParentPath] = useState<string | null>(null)
   const [activePath, setActivePath] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("");
+  const [sidebarWidth, setSidebarWidth] = useState(256) // 초기 너비 설정
 
   const handleAddItem = (type: 'file' | 'folder') => {
     setNewItemType(type)
@@ -60,9 +61,30 @@ export function Sidebar({
     setShowNewItemModal(false)
     setNewItemName('')
   }
+  
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const startX = e.clientX
+    const startWidth = sidebarWidth
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.max(200, startWidth + e.clientX - startX) // 최소 너비 200px
+      setSidebarWidth(newWidth)
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
 
   return (
-    <div className={`transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'} h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#262626] absolute md:relative z-10`}>
+    <div
+      className="h-full flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#262626] relative"
+      style={{ width: `${sidebarWidth}px` }}
+    >
       <SidebarHeader
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
@@ -102,6 +124,11 @@ export function Sidebar({
           newItemParentPath={newItemParentPath}
         />
       )}
+      {/* Resizer */}
+      <div
+        className="absolute top-0 right-0 h-full w-2 cursor-ew-resize bg-transparent"
+        onMouseDown={handleMouseDown}
+      />
     </div>
   )
 }

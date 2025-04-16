@@ -42,7 +42,7 @@ export function AuthModal({ onAuthenticate }: AuthModalProps) {
 
   if (isChecking) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-[#1e1e1e] flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-white dark:bg-[#0d1116] flex items-center justify-center z-50">
         <div className="w-full max-w-md p-8 rounded-lg shadow-lg bg-white dark:bg-[#262626]">
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -53,7 +53,7 @@ export function AuthModal({ onAuthenticate }: AuthModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-[#1e1e1e] flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white dark:bg-[#0d1116] flex items-center justify-center z-50">
       <div className="w-full max-w-md p-8 rounded-lg shadow-lg bg-white dark:bg-[#262626]">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-[#dcddde]">
           Authentication Required

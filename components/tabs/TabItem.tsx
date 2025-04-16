@@ -17,7 +17,7 @@ export function TabItem({ tabId, filePath, onTabClick, onTabClose, active }: Tab
   return (
     <div
       className={`flex items-center h-full px-3 border-r border-gray-200 dark:border-[#333] cursor-pointer min-w-[120px] max-w-[200px] rounded-t-lg ${
-        active ? "bg-gray-100 dark:bg-[#1e1e1e]" : "hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
+        active ? "bg-gray-100 dark:bg-[#0d1116]" : "hover:bg-gray-50 dark:hover:bg-[#2a2a2a]"
       }`}
       onClick={() => handleFileClick(filePath)}
     >
