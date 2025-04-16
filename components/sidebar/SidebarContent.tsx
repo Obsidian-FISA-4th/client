@@ -45,13 +45,13 @@ export function SidebarContent({
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
   const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const [selectedPath, setSelectedPath] = useState<string | null>(null) // 클릭된 항목 추적
+  const [selectedPath, setSelectedPath] = useState<string | null>(null) 
   const fetchFileSystem = useFileSystemStore((state) => state.fetchFileSystem)
   const handleDeleteFile = useFileSystemStore((state) => state.handleDeleteFile);
   const { show } = useContextMenu({ id: "folder-context-menu" });
 
   useEffect(() => {
-    fetchFileSystem(isStudentPage); // ← isStudentPage 전달
+    fetchFileSystem(isStudentPage); 
   }, [fetchFileSystem, isStudentPage]);
 
   useEffect(() => {
@@ -163,7 +163,7 @@ export function SidebarContent({
     setSelectedPath(nodePath);
 
     show({
-      event: e.nativeEvent, // React.MouseEvent에서 nativeEvent를 전달
+      event: e.nativeEvent, 
       props: { path: nodePath },
     });
   };
@@ -199,17 +199,17 @@ export function SidebarContent({
             paddingLeft: `${paddingLeft}px`,
             borderLeft: `1px solid ${
               selectedPath === node.path ? "#8a5cf4" : "#ccc"
-            }`, // 클릭 시 색상 변경
+            }`, 
             marginLeft: "15px",
             borderRadius: 0,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderLeft = "1px solid #666"; // 파일 마우스 오버 시 border 색 변경
+            e.currentTarget.style.borderLeft = "1px solid #666";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderLeft = `1px solid ${
               selectedPath === node.path ? "#8a5cf4" : "#ccc"
-            }`; // 마우스 아웃 시 원래대로
+            }`; 
           }}
         >
           {/* 아이콘 */}
@@ -230,7 +230,7 @@ export function SidebarContent({
             style={{
               wordWrap: "break-word",
               whiteSpace: "normal",
-              color: selectedPath === node.path ? "#8a5cf4" : "inherit", // 클릭 시 색상 변경
+              color: selectedPath === node.path ? "#8a5cf4" : "inherit",
             }}
           >
             {displayName}
@@ -259,17 +259,17 @@ export function SidebarContent({
             onContextMenu={(e) => handleContextMenu(e, node.path)}
             style={{
               paddingLeft: `${paddingLeft}px`,
-              fontWeight: "normal", // 기본 폰트 굵기
-              ...(dropTarget === node.path && { fontWeight: "bold" }), // 드래그 시 굵게
+              fontWeight: "normal", 
+              ...(dropTarget === node.path && { fontWeight: "bold" }), 
             }}
             onMouseEnter={(e) => {
               if (node.type === "folder") {
-                e.currentTarget.style.fontWeight = "bold"; // 폴더일 때 마우스 오버 시 굵게
+                e.currentTarget.style.fontWeight = "bold"; 
               }
             }}
             onMouseLeave={(e) => {
               if (node.type === "folder") {
-                e.currentTarget.style.fontWeight = "normal"; // 폴더일 때 마우스 아웃 시 원래대로
+                e.currentTarget.style.fontWeight = "normal"; 
               }
             }}
           >
