@@ -122,6 +122,11 @@
   color: #1e1e1e;
 }
 
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
 .prose code .token.comment,
 .prose code .token.prolog,
 .prose code .token.doctype,
