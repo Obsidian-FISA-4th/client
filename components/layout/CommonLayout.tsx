@@ -42,8 +42,6 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
   } = useFileSystemStore();
 
   useEffect(() => {
-    console.log("isStudent:", isStudent);
-    console.log("isStudentPage:", isStudentPage);
   }, [isStudent, isStudentPage]);
 
   useEffect(() => {
@@ -97,7 +95,6 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
         />
         <div className="flex flex-col flex-1 h-full max-w-[1440px] mx-auto w-full p-8 overflow-hidden">
           <Header currentPath={activeFilePath ? getCurrentPath() : undefined} />
-          <Tabs openFiles={openFiles} onTabClick={handleFileClick} onTabClose={handleTabClose} />
           {activeFilePath ? (
             isStudentPage ? (
               <div className="flex flex-col h-full">
@@ -110,10 +107,13 @@ export function CommonLayout({ isStudent, isStudentPage }: CommonLayoutProps) {
         dark:prose-headings:text-white dark:prose-p:text-white dark:prose-li:text-white dark:prose-a:text-white
       "
                   >
+                    <div className="text-3xl font-semibold text-gray-800 dark:text-gray-200 pb-10">
+                      {activeFilePath.split('/').pop()?.replace(/\.md$/, '')}
+                    </div>
                     <MDEditor.Markdown
                       source={fileContent}
                       className="prose dark:prose-invert"
-                      wrapperElement={{ 'data-color-mode': isDarkMode ? 'dark' : 'light' }}               
+                      wrapperElement={{ 'data-color-mode': isDarkMode ? 'dark' : 'light' }}
                     />
                   </div>
                 </div>

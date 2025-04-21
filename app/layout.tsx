@@ -2,9 +2,12 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Woori Eoseo-Obsidian',
+  title: 'Woori Obsidian',
   description: 'A powerful markdown editor inspired by Obsidian',
   generator: 'v0.dev',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
