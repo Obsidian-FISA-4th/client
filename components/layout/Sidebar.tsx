@@ -42,7 +42,7 @@ export function Sidebar({
   const [newItemParentPath, setNewItemParentPath] = useState<string | null>(null)
   const [activePath, setActivePath] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("");
-  const [sidebarWidth, setSidebarWidth] = useState(256) // 초기 너비 설정
+  const [sidebarWidth, setSidebarWidth] = useState(365) // 초기 너비 설정
 
   const handleAddItem = (type: 'file' | 'folder') => {
     setNewItemType(type)
