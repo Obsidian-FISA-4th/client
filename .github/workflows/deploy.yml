@@ -1,5 +1,4 @@
-name: Build and Push Docker Image
-
+name: nextjs-app CI/CD
 on:
   push:
     branches:
@@ -30,3 +29,14 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
+
+      - name: SSH to Remote Server and Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/test-docker-compose
+            docker-compose pull
+            docker-compose up -d
