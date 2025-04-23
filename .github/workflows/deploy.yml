@@ -30,6 +30,18 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
 
+
+       # Upload .env to Remote Server
+      - name: Upload .env to Remote Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script: |
+            echo "${{ secrets.ENV_FILE_CONTENTS }}" > /home/ubuntu/test-docker-compose/.env
+            
+
       - name: SSH to Remote Server and Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
